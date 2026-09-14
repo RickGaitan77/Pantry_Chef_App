@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Pantry Chef">
-  <link rel="manifest" href='data:application/manifest+json,{"name":"Pantry Chef","short_name":"PantryChef","start_url":".","display":"standalone","background_color":"#0b0f17","theme_color":"#0b0f17"}'>
   <title>Pantry Chef</title>
 
   <style>
@@ -31,13 +30,11 @@
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
 
     /* Prevent iOS keyboard viewport displacement */
     input, textarea, button {
       font-size: 16px !important;
-      user-select: text;
     }
 
     html, body {
@@ -462,6 +459,7 @@
       border-top: 1px solid var(--border-dim);
       font-size: 0.85rem;
       line-height: 1.5;
+      user-select: text;
     }
     .portion-toggle {
       display: flex;
@@ -480,10 +478,32 @@
       border-radius: 8px;
       font-weight: 600;
       font-size: 0.78rem;
+      cursor: pointer;
     }
     .portion-btn.active {
       background: var(--emerald);
       color: #022c22;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: calc(65px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(16, 185, 129, 0.95);
+      color: #022c22;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 300;
+      pointer-events: none;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
@@ -493,6 +513,8 @@
     <div class="orb-1"></div>
     <div class="orb-2"></div>
   </div>
+
+  <div id="toast" class="toast">Saved to Favorites</div>
 
   <div id="app-container">
     <header>
@@ -518,10 +540,10 @@
 
         <div class="action-grid">
           <div class="card action-card quick-meal-card" onclick="startQuickMeal()">
-            <div style="font-size: 1.6rem;">🎙️</div>
+            <div style="font-size: 1.6rem;" id="quick-meal-icon">🎙️</div>
             <div>
               <div style="font-weight: 700; font-size: 0.95rem;">Quick Meal</div>
-              <div style="font-size: 0.75rem; color: #94a3b8;">Speak ingredients</div>
+              <div style="font-size: 0.75rem; color: #94a3b8;">Speak or type</div>
             </div>
           </div>
           <div class="card action-card surprise-card" onclick="triggerSurpriseMe()">
@@ -561,7 +583,7 @@
         </div>
 
         <div id="pantry-categories" style="display: flex; flex-direction: column; gap: 14px; margin-top: 8px;">
-          <!-- Dynamically populated categories -->
+          <!-- Populated dynamically -->
         </div>
 
         <button class="btn-primary" onclick="generateFromMasterPantry()" style="margin-top: 10px;">Find Meals From Pantry</button>
@@ -580,12 +602,12 @@
       <section id="tab-favorites" class="tab-content">
         <div style="font-size: 0.85rem; color: #f43f5e; font-weight: 600; margin-bottom: 4px;">SAVED COOKBOOK</div>
         <div id="favorites-list" style="display: flex; flex-direction: column; gap: 10px;">
-          <!-- Dynamically populated favorite list-bars -->
+          <!-- Populated dynamically -->
         </div>
       </section>
     </main>
 
-    <!-- Bottom Nav -->
+    <!-- Bottom Navigation -->
     <nav>
       <button class="nav-btn active" id="nav-home" onclick="switchTab('home')">
         <span style="font-size: 1.15rem;">🏠</span>
@@ -664,12 +686,37 @@
   </div>
 
   <script>
-    // State
-    let pantryItems = JSON.parse(localStorage.getItem('pantry_items') || '[]');
-    let currentServings = 2;
-    const MODEL_NAME = 'gemini-3.6-flash';
+    // Utilities & Guards
+    function loadJSON(key, fallback) {
+      try {
+        const v = JSON.parse(localStorage.getItem(key));
+        return v ?? fallback;
+      } catch {
+        return fallback;
+      }
+    }
 
-    // Daily Ticker Logic (Deterministic seed)
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // State
+    let pantryItems = loadJSON('pantry_items', []);
+    let currentRecipes = [];
+    let lastPromptText = '';
+    let lastPromptTitle = '';
+    let currentServings = 2;
+    const MODEL_NAME = 'gemini-2.5-flash';
+
+    // Daily Ticker Logic
     const sayings = [
       "What's on the menu today?",
       "What are we cooking?",
@@ -688,7 +735,6 @@
       if (tickerEl) tickerEl.textContent = text;
     }
 
-    // Viewport reset fix for iOS keyboard displacement
     function resetViewportScroll() {
       window.scrollTo(0, 0);
       document.body.scrollTop = 0;
@@ -714,7 +760,6 @@
       if (tabId === 'favorites') renderFavorites();
     }
 
-    // Modals & Overlays
     function openOverlay(id) {
       resetViewportScroll();
       const el = document.getElementById(id);
@@ -728,14 +773,13 @@
     }
     function openModal(id) { openOverlay(id); }
 
-    // Settings
     function saveApiKey() {
       const input = document.getElementById('api-key-input');
       if (!input) return;
       const key = input.value.trim();
       if (key) {
         localStorage.setItem('gemini_api_key', key);
-        alert('API Key saved successfully!');
+        showToast('API Key saved!');
         closeOverlay('settings-modal');
       }
     }
@@ -809,14 +853,14 @@
       Object.keys(grouped).forEach(cat => {
         const group = document.createElement('div');
         group.className = 'category-group';
-        group.innerHTML = `<div class="category-title">${cat}</div><div class="chip-cloud" id="cat-${cat}"></div>`;
+        group.innerHTML = `<div class="category-title">${esc(cat)}</div><div class="chip-cloud"></div>`;
         container.appendChild(group);
 
-        const cloud = group.querySelector(`#cat-${cat}`);
+        const cloud = group.querySelector('.chip-cloud');
         grouped[cat].forEach(item => {
           const chip = document.createElement('div');
           chip.className = `chip ${item.expiring ? 'expiring' : ''}`;
-          chip.innerHTML = `<span>${item.name}</span><span class="chip-del" onclick="deletePantryItem(${item.id}, event)">×</span>`;
+          chip.innerHTML = `<span>${esc(item.name)}</span><span class="chip-del" onclick="deletePantryItem(${item.id}, event)">×</span>`;
           chip.onclick = () => toggleExpiring(item.id);
           cloud.appendChild(chip);
         });
@@ -850,19 +894,22 @@
       });
     }
 
-    // Gemini API Direct Fetch
+    // Direct Gemini Fetch with GenerationConfig & Token Protection
     async function callGemini(promptText) {
       const apiKey = (localStorage.getItem('gemini_api_key') || '').trim();
       if (!apiKey) {
         openModal('settings-modal');
-        throw new Error('API Key missing. Please set your key in Settings.');
+        throw new Error('API Key missing. Please configure your key in Settings.');
       }
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
       const payload = {
-        contents: [{
-          parts: [{ text: promptText }]
-        }]
+        contents: [{ parts: [{ text: promptText }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          maxOutputTokens: 8192,
+          temperature: 0.7
+        }
       };
 
       const res = await fetch(url, {
@@ -878,18 +925,61 @@
 
       const data = await res.json();
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-      return JSON.parse(cleanJson);
+      return JSON.parse(rawText);
     }
 
-    // Recipe Generation Handlers
     function setPortion(num) {
+      if (currentServings === num) return;
       currentServings = num;
       document.getElementById('btn-portion-2')?.classList.toggle('active', num === 2);
       document.getElementById('btn-portion-4')?.classList.toggle('active', num === 4);
+      if (lastPromptText) {
+        generateAndDisplayRecipes(lastPromptText, lastPromptTitle);
+      }
+    }
+
+    // Render Recipes from in-memory array
+    function renderRecipeCards() {
+      const container = document.getElementById('results-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      currentRecipes.forEach((r, idx) => {
+        const ingredients = Array.isArray(r.ingredients) ? r.ingredients : [];
+        const instructions = Array.isArray(r.instructions) ? r.instructions : [];
+
+        const card = document.createElement('div');
+        card.className = 'recipe-card';
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:1.4rem;">${esc(r.emoji || '🍽️')}</span>
+              <div>
+                <div style="font-weight:700; font-size:0.95rem;">${esc(r.title)}</div>
+                <div style="font-size:0.75rem; color:#94a3b8;">${esc(r.time)} • <span style="color:#34d399;">${esc(r.tier)}</span></div>
+              </div>
+            </div>
+            <button class="icon-btn" onclick="saveToFavorites(${idx}, event)">❤️</button>
+          </div>
+          ${r.missing && r.missing !== 'None' ? `<div style="font-size:0.75rem; color:#fde68a; margin-top:6px;">⚠️ Swap: ${esc(r.missing)}</div>` : ''}
+          <div class="recipe-details">
+            <strong>Ingredients:</strong>
+            <ul style="margin: 6px 0 10px 18px;">${ingredients.map(i => `<li>${esc(i)}</li>`).join('')}</ul>
+            <strong>Instructions:</strong>
+            <ol style="margin: 6px 0 10px 18px;">${instructions.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+            <div style="color:#6ee7b7; font-size:0.78rem;">💡 ${esc(r.chefTip)}</div>
+          </div>
+        `;
+        card.onclick = (e) => {
+          if (e.target.tagName !== 'BUTTON') card.classList.toggle('expanded');
+        };
+        container.appendChild(card);
+      });
     }
 
     async function generateAndDisplayRecipes(prompt, title) {
+      lastPromptText = prompt;
+      lastPromptTitle = title;
       openOverlay('overlay-results');
       document.getElementById('results-title').textContent = title;
       const loader = document.getElementById('results-loading');
@@ -915,67 +1005,60 @@ Format response strictly as a JSON array of 5 recipe objects with keys:
 Scale for ${currentServings} servings.`;
 
         const recipes = await callGemini(fullPrompt);
+        currentRecipes = Array.isArray(recipes) ? recipes : [];
         loader.style.display = 'none';
-
-        recipes.forEach(r => {
-          const card = document.createElement('div');
-          card.className = 'recipe-card';
-          card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:1.4rem;">${r.emoji || '🍽️'}</span>
-                <div>
-                  <div style="font-weight:700; font-size:0.95rem;">${r.title}</div>
-                  <div style="font-size:0.75rem; color:#94a3b8;">${r.time} • <span style="color:#34d399;">${r.tier}</span></div>
-                </div>
-              </div>
-              <button class="icon-btn" onclick="saveToFavorites('${escape(JSON.stringify(r))}', event)">❤️</button>
-            </div>
-            ${r.missing && r.missing !== 'None' ? `<div style="font-size:0.75rem; color:#fde68a; margin-top:6px;">⚠️ Swap: ${r.missing}</div>` : ''}
-            <div class="recipe-details">
-              <strong>Ingredients:</strong>
-              <ul style="margin: 6px 0 10px 18px;">${r.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
-              <strong>Instructions:</strong>
-              <ol style="margin: 6px 0 10px 18px;">${r.instructions.map(s => `<li>${s}</li>`).join('')}</ol>
-              <div style="color:#6ee7b7; font-size:0.78rem;">💡 ${r.chefTip}</div>
-            </div>
-          `;
-          card.onclick = (e) => {
-            if (e.target.tagName !== 'BUTTON') card.classList.toggle('expanded');
-          };
-          container.appendChild(card);
-        });
+        renderRecipeCards();
 
       } catch (err) {
         loader.style.display = 'none';
-        container.innerHTML = `<div style="color:#f87171; font-size:0.85rem; padding:20px;">Failed to generate recipes: ${err.message}</div>`;
+        container.innerHTML = `<div style="color:#f87171; font-size:0.85rem; padding:20px;">Failed to generate recipes: ${esc(err.message)}</div>`;
       }
     }
 
     function generateFromMasterPantry() {
-      if (!pantryItems.length) return alert('Add ingredients to your pantry first!');
+      if (!pantryItems.length) return showToast('Add ingredients to pantry first!');
       const items = pantryItems.map(i => i.name).join(', ');
       generateAndDisplayRecipes(`Create 5 varied recipes prioritizing these ingredients: ${items}.`, 'Pantry Recipes');
     }
 
     function triggerSurpriseMe() {
-      if (!pantryItems.length) return alert('Add ingredients to your pantry first!');
+      if (!pantryItems.length) return showToast('Add ingredients to pantry first!');
       const items = pantryItems.map(i => i.name).join(', ');
       generateAndDisplayRecipes(`Create 5 fun, unexpected chef recipes utilizing some of these ingredients: ${items}.`, 'Surprise Dishes');
     }
 
     function startQuickMeal() {
-      const spoken = prompt('Enter or speak ingredients currently on hand:');
-      if (spoken) {
-        generateAndDisplayRecipes(`Create 5 quick meals using strictly these ingredients: ${spoken}.`, 'Quick Meal');
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        const icon = document.getElementById('quick-meal-icon');
+        icon.textContent = '🔴';
+        recognition.onresult = (e) => {
+          icon.textContent = '🎙️';
+          const spoken = e.results[0][0].transcript;
+          if (spoken) generateAndDisplayRecipes(`Create 5 quick meals using strictly these ingredients: ${spoken}.`, 'Quick Meal');
+        };
+        recognition.onerror = () => {
+          icon.textContent = '🎙️';
+          fallbackTextPrompt();
+        };
+        recognition.start();
+      } else {
+        fallbackTextPrompt();
       }
+    }
+
+    function fallbackTextPrompt() {
+      const spoken = prompt('Enter or dictate ingredients on hand:');
+      if (spoken) generateAndDisplayRecipes(`Create 5 quick meals using strictly these ingredients: ${spoken}.`, 'Quick Meal');
     }
 
     function generateRescueMeal() {
       closeOverlay('overlay-useit');
       const expiring = pantryItems.filter(i => i.expiring).map(i => i.name).join(', ');
-      if (!expiring) return alert('No expiring items flagged.');
-      generateAndDisplayRecipes(`Create 5 recipes that prioritize rescuing and using up these expiring ingredients immediately: ${expiring}.`, 'Rescue Meals');
+      if (!expiring) return showToast('No expiring items flagged.');
+      generateAndDisplayRecipes(`Create 5 recipes that rescue and use up these expiring ingredients immediately: ${expiring}.`, 'Rescue Meals');
     }
 
     function filterAndGenerate(mood) {
@@ -985,7 +1068,7 @@ Scale for ${currentServings} servings.`;
     }
 
     async function triggerChefSecret() {
-      if (!pantryItems.length) return alert('Add items to your pantry first!');
+      if (!pantryItems.length) return showToast('Add items to pantry first!');
       const items = pantryItems.map(i => i.name).join(', ');
       openOverlay('overlay-results');
       document.getElementById('results-title').textContent = "Chef's Flavor Secret";
@@ -998,7 +1081,7 @@ Scale for ${currentServings} servings.`;
         const prompt = `Look at these pantry ingredients: ${items}.
 Pick two unexpected ingredients from this list that chemically or culinarily harmonize.
 Explain the secret food chemistry in 2 sentences, then provide 2 quick dishes that use this secret trick.
-Return strict JSON:
+Return strict JSON array:
 [
   {
     "title": "Pairing Trick: ...",
@@ -1011,31 +1094,38 @@ Return strict JSON:
   }
 ]`;
         const res = await callGemini(prompt);
+        currentRecipes = Array.isArray(res) ? res : [];
         loader.style.display = 'none';
-        res.forEach(r => {
+
+        currentRecipes.forEach((r, idx) => {
+          const instructions = Array.isArray(r.instructions) ? r.instructions : [];
           const card = document.createElement('div');
           card.className = 'recipe-card expanded';
           card.innerHTML = `
-            <div style="font-weight:700; font-size:1rem; color:#fde68a;">${r.title}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-weight:700; font-size:1rem; color:#fde68a;">${esc(r.title)}</div>
+              <button class="icon-btn" onclick="saveToFavorites(${idx}, event)">❤️</button>
+            </div>
             <div class="recipe-details" style="display:block;">
-              <p style="margin-bottom:8px; color:#a7f3d0;">${r.chefTip}</p>
+              <p style="margin-bottom:8px; color:#a7f3d0;">${esc(r.chefTip)}</p>
               <strong>Instructions:</strong>
-              <ol style="margin-left:18px;">${r.instructions.map(s => `<li>${s}</li>`).join('')}</ol>
+              <ol style="margin-left:18px;">${instructions.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
             </div>
           `;
           container.appendChild(card);
         });
       } catch (err) {
         loader.style.display = 'none';
-        container.innerHTML = `<div style="color:#f87171; font-size:0.85rem; padding:20px;">${err.message}</div>`;
+        container.innerHTML = `<div style="color:#f87171; font-size:0.85rem; padding:20px;">${esc(err.message)}</div>`;
       }
     }
 
     // Suggestions Tab
     async function fetchSuggestions() {
+      if (!pantryItems.length) return showToast('Add items to pantry first!');
       const container = document.getElementById('suggestions-container');
       container.innerHTML = '<div style="color:#94a3b8; font-size:0.85rem; text-align:center; padding:20px;">Analyzing culinary profiles...</div>';
-      const favs = JSON.parse(localStorage.getItem('pantry_favs') || '[]');
+      const favs = loadJSON('pantry_favs', []);
       const items = pantryItems.map(i => i.name).join(', ');
 
       const prompt = `Pantry items: ${items}.
@@ -1049,40 +1139,36 @@ Return strict JSON array:
       try {
         const data = await callGemini(prompt);
         container.innerHTML = '';
-        data.forEach(s => {
+        (Array.isArray(data) ? data : []).forEach(s => {
           const card = document.createElement('div');
           card.className = 'card';
           card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div style="font-weight:700;">${s.emoji} ${s.title}</div>
-              <span style="font-size:0.75rem; color:#94a3b8;">${s.time}</span>
+              <div style="font-weight:700;">${esc(s.emoji)} ${esc(s.title)}</div>
+              <span style="font-size:0.75rem; color:#94a3b8;">${esc(s.time)}</span>
             </div>
-            <div style="font-size:0.78rem; color:#fde68a; margin-top:4px;">✨ ${s.why}</div>
+            <div style="font-size:0.78rem; color:#fde68a; margin-top:4px;">✨ ${esc(s.why)}</div>
           `;
           container.appendChild(card);
         });
       } catch (err) {
-        container.innerHTML = `<div style="color:#f87171; font-size:0.85rem;">Failed: ${err.message}</div>`;
+        container.innerHTML = `<div style="color:#f87171; font-size:0.85rem;">Failed: ${esc(err.message)}</div>`;
       }
     }
 
-    // Favorites & IndexedDB
-    let db;
-    const request = indexedDB.open('PantryChefDB', 1);
-    request.onupgradeneeded = (e) => {
-      db = e.target.result;
-      if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos');
-    };
-    request.onsuccess = (e) => { db = e.target.result; };
-
-    function saveToFavorites(encodedRecipe, e) {
+    // Favorites Management (In-Memory Reference)
+    function saveToFavorites(idx, e) {
       e.stopPropagation();
-      const recipe = JSON.parse(unescape(encodedRecipe));
-      let favs = JSON.parse(localStorage.getItem('pantry_favs') || '[]');
+      const recipe = currentRecipes[idx];
+      if (!recipe) return;
+
+      let favs = loadJSON('pantry_favs', []);
       if (!favs.some(f => f.title === recipe.title)) {
         favs.push({ ...recipe, id: Date.now() });
         localStorage.setItem('pantry_favs', JSON.stringify(favs));
-        alert(`Saved ${recipe.title} to Favorites!`);
+        showToast(`Saved ${recipe.title}!`);
+      } else {
+        showToast('Already in Favorites');
       }
     }
 
@@ -1090,35 +1176,48 @@ Return strict JSON array:
       const list = document.getElementById('favorites-list');
       if (!list) return;
       list.innerHTML = '';
-      const favs = JSON.parse(localStorage.getItem('pantry_favs') || '[]');
+      const favs = loadJSON('pantry_favs', []);
       if (!favs.length) {
-        list.innerHTML = `<div style="color:#94a3b8; font-size:0.85rem; text-align:center; padding:20px;">No saved favorites yet. Tap ❤️ on any recipe to save it here.</div>`;
+        list.innerHTML = `<div style="color:#94a3b8; font-size:0.85rem; text-align:center; padding:20px;">No saved favorites yet. Tap ❤️ on any recipe card to save it here.</div>`;
         return;
       }
       favs.forEach(f => {
+        const ingredients = Array.isArray(f.ingredients) ? f.ingredients : [];
+        const instructions = Array.isArray(f.instructions) ? f.instructions : [];
+
         const item = document.createElement('div');
         item.className = 'card';
-        item.style.display = 'flex';
-        item.style.alignItems = 'center';
-        item.style.gap = '12px';
         item.innerHTML = `
-          <div style="font-size:1.8rem; width:44px; text-align:center;">${f.emoji || '🍽️'}</div>
-          <div style="flex:1;">
-            <div style="font-weight:700; font-size:0.9rem;">${f.title}</div>
-            <div style="font-size:0.75rem; color:#94a3b8;">${f.time} • Tap to view</div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:1.8rem; width:44px; text-align:center;">${esc(f.emoji || '🍽️')}</div>
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:0.9rem;">${esc(f.title)}</div>
+              <div style="font-size:0.75rem; color:#94a3b8;">${esc(f.time)} • Tap to view</div>
+            </div>
+            <button class="icon-btn" onclick="deleteFavorite(${f.id}, event)">🗑️</button>
           </div>
-          <button class="icon-btn" onclick="deleteFavorite(${f.id}, event)">🗑️</button>
+          <div class="recipe-details">
+            <strong>Ingredients:</strong>
+            <ul style="margin: 6px 0 10px 18px;">${ingredients.map(i => `<li>${esc(i)}</li>`).join('')}</ul>
+            <strong>Instructions:</strong>
+            <ol style="margin: 6px 0 10px 18px;">${instructions.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+            ${f.chefTip ? `<div style="color:#6ee7b7; font-size:0.78rem;">💡 ${esc(f.chefTip)}</div>` : ''}
+          </div>
         `;
+        item.onclick = (e) => {
+          if (e.target.tagName !== 'BUTTON') item.classList.toggle('expanded');
+        };
         list.appendChild(item);
       });
     }
 
     function deleteFavorite(id, e) {
       e.stopPropagation();
-      let favs = JSON.parse(localStorage.getItem('pantry_favs') || '[]');
+      let favs = loadJSON('pantry_favs', []);
       favs = favs.filter(f => f.id !== id);
       localStorage.setItem('pantry_favs', JSON.stringify(favs));
       renderFavorites();
+      showToast('Removed from Favorites');
     }
 
     // Init
