@@ -3,798 +3,1134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Pantry Chef">
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Pantry Chef","short_name":"PantryChef","start_url":".","display":"standalone","background_color":"#0b0f17","theme_color":"#0b0f17"}'>
   <title>Pantry Chef</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    /* Global Resets & Safe Areas */
+    :root {
+      --bg: #0b0f17;
+      --card-bg: rgba(18, 24, 38, 0.78);
+      --border-dim: rgba(255, 255, 255, 0.08);
+      --cobalt: #2563eb;
+      --cobalt-glow: rgba(37, 99, 235, 0.45);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.45);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.45);
+      --ruby: #e11d48;
+      --ruby-glow: rgba(225, 29, 72, 0.45);
+    }
+
     * {
-      -webkit-tap-highlight-color: transparent;
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
-    body {
-      background-color: #0b0f17;
-      color: white;
+
+    /* Prevent iOS keyboard viewport displacement */
+    input, textarea, button {
+      font-size: 16px !important;
+      user-select: text;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg);
+      color: #f8fafc;
       overflow: hidden;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      position: fixed;
+      inset: 0;
     }
-    .safe-pt { padding-top: env(safe-area-inset-top); }
-    .safe-pb { padding-bottom: calc(env(safe-area-inset-bottom) + 80px); }
-    .safe-nav-pb { padding-bottom: env(safe-area-inset-bottom); }
 
-    /* Scrollbar Hiding */
-    .hide-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    /* Ambient Background Orbs */
+    .ambient-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
     }
-    .hide-scrollbar::-webkit-scrollbar {
+    .orb-1 {
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      top: -40px;
+      left: -40px;
+      background: radial-gradient(circle, var(--cobalt-glow) 0%, transparent 70%);
+      filter: blur(50px);
+      animation: float 14s ease-in-out infinite alternate;
+    }
+    .orb-2 {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      bottom: 80px;
+      right: -60px;
+      background: radial-gradient(circle, var(--emerald-glow) 0%, transparent 70%);
+      filter: blur(60px);
+      animation: float 18s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes float {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(25px, 35px); }
+    }
+
+    /* Main App Layout */
+    #app-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(72px, calc(env(safe-area-inset-bottom) + 64px));
+    }
+
+    /* Header */
+    header {
+      padding: 10px 16px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* Neon Diner Sign */
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .neon-title {
+      font-size: 1.35rem;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+      text-shadow: 
+        0 0 4px #fff,
+        0 0 10px #2563eb,
+        0 0 20px #2563eb,
+        0 0 35px #1d4ed8;
+      animation: neonFlicker 7s infinite ease-in-out;
+    }
+    @keyframes neonFlicker {
+      0%, 100% { opacity: 1; text-shadow: 0 0 4px #fff, 0 0 10px #2563eb, 0 0 20px #2563eb, 0 0 35px #1d4ed8; }
+      42% { opacity: 0.88; text-shadow: 0 0 2px #fff, 0 0 6px #2563eb; }
+      43% { opacity: 1; text-shadow: 0 0 4px #fff, 0 0 10px #2563eb, 0 0 20px #2563eb, 0 0 35px #1d4ed8; }
+      71% { opacity: 0.65; text-shadow: none; }
+      72% { opacity: 1; text-shadow: 0 0 4px #fff, 0 0 10px #2563eb, 0 0 20px #2563eb, 0 0 35px #1d4ed8; }
+    }
+
+    /* Daily Kinetic Slot Ticker */
+    .daily-ticker-box {
+      overflow: hidden;
+      height: 24px;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.08);
+      border-radius: 999px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+    }
+    .ticker-text {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #a7f3d0;
+      white-space: nowrap;
+      animation: slotMachineIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slotMachineIn {
+      0% { transform: translateY(100%); filter: blur(4px); opacity: 0; }
+      100% { transform: translateY(0); filter: blur(0); opacity: 1; }
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-dim);
+      color: #94a3b8;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .icon-btn:active {
+      transform: scale(0.92);
+      border-color: var(--cobalt);
+      color: #fff;
+    }
+
+    /* Views */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 8px 16px 20px;
+    }
+    .tab-content {
       display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .tab-content.active {
+      display: flex;
     }
 
-    /* Diner Neon Glow */
-    .neon-text {
-      text-shadow: 0 0 5px #fff, 0 0 10px #2563eb, 0 0 20px #2563eb, 0 0 40px #1d4ed8;
+    /* Tactile Cards */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-dim);
+      border-radius: 18px;
+      padding: 16px;
+      transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
     }
-    .animate-flicker {
-      animation: flicker 7s infinite;
-    }
-    @keyframes flicker {
-      0%, 93%, 95%, 97%, 99%, 100% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #2563eb, 0 0 20px #2563eb, 0 0 40px #1d4ed8; }
-      94% { opacity: 0.85; text-shadow: 0 0 2px #fff, 0 0 5px #2563eb, 0 0 10px #1d4ed8; }
-      96% { opacity: 0.7; text-shadow: 0 0 1px #fff, 0 0 3px #2563eb; }
-      98% { opacity: 0.9; text-shadow: 0 0 4px #fff, 0 0 8px #2563eb, 0 0 15px #1d4ed8; }
-    }
-
-    /* Daily Ticker Animation */
-    .animate-ticker {
-      animation: slideUpBlur 0.8s ease-out forwards;
-      animation-delay: 0.2s;
-      opacity: 0;
-    }
-    @keyframes slideUpBlur {
-      0% { transform: translateY(100%); filter: blur(4px); opacity: 0; box-shadow: 0 0 0px rgba(16,185,129,0); }
-      100% { transform: translateY(0); filter: blur(0px); opacity: 1; box-shadow: 0 0 15px rgba(16,185,129,0.5); }
+    .card:active {
+      transform: scale(0.985);
     }
 
-    /* Slide Over Modal */
-    .slide-over {
-      transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Master Inventory Banner */
+    .inventory-banner {
+      border: 1px solid rgba(37, 99, 235, 0.25);
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(18, 24, 38, 0.85));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
     }
-    .slide-over.open {
-      transform: translateY(0);
+    .inventory-banner:active {
+      border-color: var(--cobalt);
+      box-shadow: 0 0 18px var(--cobalt-glow);
     }
-    
-    /* Fade In */
-    .fade-in {
-      animation: fadeIn 0.3s ease-out forwards;
+
+    /* Action Grid */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    .action-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+      cursor: pointer;
+    }
+    .quick-meal-card {
+      border-color: rgba(37, 99, 235, 0.3);
+    }
+    .quick-meal-card:active {
+      border-color: var(--cobalt);
+      box-shadow: 0 0 16px var(--cobalt-glow);
+    }
+    .surprise-card {
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .surprise-card:active {
+      border-color: var(--amber);
+      box-shadow: 0 0 16px var(--amber-glow);
+    }
+
+    /* Burnt Amber Lightning Bolt */
+    .amber-bolt {
+      color: #f59e0b;
+      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.75));
+    }
+
+    /* 3 Horizontal Squares */
+    .squares-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .square-card {
+      aspect-ratio: 1 / 1;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      gap: 5px;
+    }
+    .sq-useit {
+      border-color: rgba(225, 29, 72, 0.35);
+    }
+    .sq-useit:active {
+      border-color: var(--ruby);
+      box-shadow: 0 0 14px var(--ruby-glow);
+      transform: scale(0.96);
+    }
+    .sq-speed {
+      border-color: rgba(37, 99, 235, 0.35);
+    }
+    .sq-speed:active {
+      border-color: var(--cobalt);
+      box-shadow: 0 0 14px var(--cobalt-glow);
+      transform: scale(0.96);
+    }
+    .sq-chef {
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+    .sq-chef:active {
+      border-color: var(--amber);
+      box-shadow: 0 0 14px var(--amber-glow);
+      transform: scale(0.96);
+    }
+
+    /* Pantry Input Bar */
+    .pantry-input-row {
+      display: flex;
+      gap: 8px;
+    }
+    .pantry-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-dim);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #fff;
+      outline: none;
+    }
+    .pantry-input:focus {
+      border-color: var(--emerald);
+    }
+    .btn-add-item {
+      background: var(--emerald);
+      color: #042f2e;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      padding: 0 18px;
+      cursor: pointer;
+    }
+    .btn-add-item:active {
+      transform: scale(0.95);
+      filter: brightness(1.15);
+    }
+
+    /* Category Blocks & Chips */
+    .category-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .category-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+    .chip-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+      color: #d1fae5;
+      padding: 7px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .chip.expiring {
+      border-color: var(--ruby) !important;
+      background: rgba(225, 29, 72, 0.2) !important;
+      color: #fecdd3 !important;
+      box-shadow: 0 0 10px var(--ruby-glow);
+    }
+    .chip-del {
+      font-size: 1.1rem;
+      line-height: 1;
+      opacity: 0.6;
+    }
+    .chip-del:hover {
+      opacity: 1;
+    }
+
+    /* Fixed Bottom Nav */
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(56px + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(11, 15, 23, 0.9);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border-dim);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      z-index: 100;
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      font-size: 0.68rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    .nav-btn:active {
+      transform: scale(0.92);
+    }
+    .nav-btn.active#nav-home { color: #60a5fa; }
+    .nav-btn.active#nav-pantry { color: #34d399; }
+    .nav-btn.active#nav-suggestions { color: #fbbf24; }
+    .nav-btn.active#nav-favorites { color: #fb7185; }
+
+    /* Overlays & Modals */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 15, 23, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      padding: max(20px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+      overflow-y: auto;
+    }
+    .overlay.active {
+      display: flex;
+    }
+    .overlay-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .btn-primary {
+      background: var(--emerald);
+      color: #022c22;
+      border: none;
+      font-weight: 700;
+      border-radius: 14px;
+      padding: 14px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn-primary:active {
+      transform: scale(0.98);
+      filter: brightness(1.1);
+    }
+
+    /* Results Styles */
+    .recipe-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-dim);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+    .recipe-card.expanded .recipe-details {
+      display: block;
+    }
+    .recipe-details {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-dim);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .portion-toggle {
+      display: flex;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+    .portion-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: none;
+      color: #94a3b8;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.78rem;
+    }
+    .portion-btn.active {
+      background: var(--emerald);
+      color: #022c22;
     }
   </style>
 </head>
-<body class="h-[100dvh] w-full flex flex-col relative">
+<body>
 
-  <!-- Ambient Emerald Glow Orbs -->
-  <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-600/20 blur-[80px] pointer-events-none z-0"></div>
-  <div class="absolute bottom-[10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-emerald-600/20 blur-[100px] pointer-events-none z-0"></div>
+  <div class="ambient-glow">
+    <div class="orb-1"></div>
+    <div class="orb-2"></div>
+  </div>
 
-  <!-- Main Content Wrapper -->
-  <div class="flex-1 overflow-y-auto safe-pt safe-pb px-4 relative z-10 w-full max-w-2xl mx-auto" id="main-content">
-    
-    <!-- HEADER -->
-    <header class="flex justify-between items-center overflow-hidden pt-4 pb-6">
-      <div class="flex items-center">
-        <h1 class="text-2xl font-bold tracking-tight text-white neon-text animate-flicker shrink-0">
-          Pantry Chef
-        </h1>
-        <div class="overflow-hidden relative ml-3 h-7 flex items-center">
-          <div id="daily-ticker" class="animate-ticker px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
-            <!-- Injected via JS -->
-          </div>
+  <div id="app-container">
+    <header>
+      <div class="brand-group">
+        <span class="neon-title">PANTRY CHEF</span>
+        <div class="daily-ticker-box">
+          <span class="ticker-text" id="daily-ticker">Chef mode: activated.</span>
         </div>
       </div>
-      <div class="flex gap-2 shrink-0 ml-2">
-        <button id="btn-settings" class="p-2 rounded-full bg-white/5 border border-white/10 text-gray-300 hover:text-white transition-all active:scale-95">
-          <i data-lucide="settings" class="w-5 h-5"></i>
-        </button>
-      </div>
+      <button class="icon-btn" onclick="openModal('settings-modal')" aria-label="Settings">⚙</button>
     </header>
 
-    <!-- ==================== TAB 1: HOME ==================== -->
-    <div id="tab-home" class="tab-content space-y-6">
-      
-      <!-- Master Inventory Quick-Link -->
-      <button onclick="switchTab('pantry')" class="w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(37,99,235,0.3)] active:scale-[0.98] active:translate-y-0 active:border-blue-500 active:shadow-[0_0_20px_rgba(37,99,235,0.5)] cursor-pointer">
-        <div class="text-left">
-          <p class="text-sm text-gray-400">Master Inventory</p>
-          <p class="text-xl font-semibold"><span id="inventory-count">0</span> Items Logged</p>
+    <main>
+      <!-- TAB 1: HOME -->
+      <section id="tab-home" class="tab-content active">
+        <div class="card inventory-banner" onclick="switchTab('pantry')">
+          <div>
+            <div style="font-size: 0.8rem; color: #93c5fd; font-weight: 600;">MASTER INVENTORY</div>
+            <div style="font-size: 1.15rem; font-weight: 700; margin-top: 2px;" id="home-pantry-count">0 Items Logged</div>
+          </div>
+          <div style="font-size: 1.3rem; color: #60a5fa;">→</div>
         </div>
-        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
-          <i data-lucide="list" class="w-5 h-5"></i>
+
+        <div class="action-grid">
+          <div class="card action-card quick-meal-card" onclick="startQuickMeal()">
+            <div style="font-size: 1.6rem;">🎙️</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem;">Quick Meal</div>
+              <div style="font-size: 0.75rem; color: #94a3b8;">Speak ingredients</div>
+            </div>
+          </div>
+          <div class="card action-card surprise-card" onclick="triggerSurpriseMe()">
+            <div class="amber-bolt" style="font-size: 1.6rem;">⚡</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem;">Surprise Me!</div>
+              <div style="font-size: 0.75rem; color: #94a3b8;">Chef choice meal</div>
+            </div>
+          </div>
         </div>
+
+        <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; margin-top: 6px; letter-spacing: 0.05em;">SMART KITCHEN ACTIONS</div>
+        <div class="squares-bar">
+          <div class="card square-card sq-useit" onclick="openOverlay('overlay-useit')">
+            <span style="font-size: 1.3rem;">⚠️</span>
+            <span style="font-size: 0.75rem; font-weight: 700;">Use It Up</span>
+            <span style="font-size: 0.65rem; color: #fda4af;" id="sq-expiring-count">0 tagged</span>
+          </div>
+          <div class="card square-card sq-speed" onclick="openOverlay('overlay-speed')">
+            <span style="font-size: 1.3rem;">⏱️</span>
+            <span style="font-size: 0.75rem; font-weight: 700;">Speed/Mood</span>
+            <span style="font-size: 0.65rem; color: #93c5fd;">Fast filters</span>
+          </div>
+          <div class="card square-card sq-chef" onclick="triggerChefSecret()">
+            <span style="font-size: 1.3rem;">✨</span>
+            <span style="font-size: 0.75rem; font-weight: 700;">Chef Secret</span>
+            <span style="font-size: 0.65rem; color: #fde68a;">Flavor trick</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: PANTRY -->
+      <section id="tab-pantry" class="tab-content">
+        <div class="pantry-input-row">
+          <input type="text" id="pantry-input" class="pantry-input" placeholder="Type or paste ingredients..." onblur="resetViewportScroll()">
+          <button class="btn-add-item" onclick="handleAddPantryItem()">Add</button>
+        </div>
+
+        <div id="pantry-categories" style="display: flex; flex-direction: column; gap: 14px; margin-top: 8px;">
+          <!-- Dynamically populated categories -->
+        </div>
+
+        <button class="btn-primary" onclick="generateFromMasterPantry()" style="margin-top: 10px;">Find Meals From Pantry</button>
+      </section>
+
+      <!-- TAB 3: SUGGESTIONS -->
+      <section id="tab-suggestions" class="tab-content">
+        <div style="font-size: 0.85rem; color: #fde68a; font-weight: 600; margin-bottom: 4px;">CURATED TASTE ENGINE</div>
+        <div id="suggestions-container" style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="color: #94a3b8; font-size: 0.85rem; padding: 20px 0; text-align: center;">Tap below to explore combinations based on your tastes and inventory.</div>
+        </div>
+        <button class="btn-primary" onclick="fetchSuggestions()" style="background: var(--amber); color: #451a03; margin-top: 10px;">Explore New Combinations</button>
+      </section>
+
+      <!-- TAB 4: FAVORITES -->
+      <section id="tab-favorites" class="tab-content">
+        <div style="font-size: 0.85rem; color: #f43f5e; font-weight: 600; margin-bottom: 4px;">SAVED COOKBOOK</div>
+        <div id="favorites-list" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Dynamically populated favorite list-bars -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav>
+      <button class="nav-btn active" id="nav-home" onclick="switchTab('home')">
+        <span style="font-size: 1.15rem;">🏠</span>
+        <span>Home</span>
       </button>
-
-      <!-- Action Grid -->
-      <div class="grid grid-cols-2 gap-4">
-        <button onclick="generateRecipes('quick-meal')" class="col-span-2 relative overflow-hidden flex items-center p-6 rounded-2xl bg-gradient-to-br from-[#1e293b] to-[#0f172a] border border-white/10 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-500/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-[0.98] active:translate-y-0 active:border-emerald-500 active:shadow-[0_0_20px_rgba(16,185,129,0.5)] cursor-pointer">
-          <div class="flex-1 text-left relative z-10">
-            <h3 class="text-lg font-bold text-white mb-1">Quick Meal</h3>
-            <p class="text-sm text-gray-400">Dictate what's in front of you</p>
-          </div>
-          <div class="w-14 h-14 rounded-full bg-emerald-600 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] animate-pulse relative z-10">
-            <i data-lucide="mic" class="w-6 h-6 text-white"></i>
-          </div>
-        </button>
-
-        <button onclick="generateRecipes('surprise-me')" class="col-span-2 flex items-center p-6 rounded-2xl bg-white/5 border border-white/10 transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-500/50 hover:shadow-[0_0_15px_rgba(245,158,11,0.3)] active:scale-[0.98] active:translate-y-0 active:border-amber-500 active:shadow-[0_0_20px_rgba(245,158,11,0.5)] cursor-pointer">
-          <div class="flex-1 text-left">
-            <h3 class="text-lg font-bold text-white mb-1">Surprise Me!</h3>
-            <p class="text-sm text-gray-400">Random meal from your pantry</p>
-          </div>
-          <div class="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]">
-            <i data-lucide="zap" class="w-6 h-6"></i>
-          </div>
-        </button>
-      </div>
-
-      <!-- Smart Actions Bar -->
-      <div>
-        <h3 class="text-sm font-semibold text-gray-400 mb-3 px-1 uppercase tracking-wider">Smart Actions</h3>
-        <div class="flex gap-3 overflow-x-auto pb-4 snap-x hide-scrollbar">
-          
-          <button onclick="generateRecipes('use-it-up')" class="snap-start shrink-0 w-32 h-32 rounded-2xl bg-white/5 border border-rose-500/30 flex flex-col items-center justify-center p-4 relative overflow-hidden group transition-all duration-200 hover:scale-[1.02] hover:border-rose-400 hover:shadow-[0_0_15px_rgba(244,63,94,0.4)] active:scale-[0.96] active:border-rose-500 active:shadow-[0_0_20px_rgba(244,63,94,0.6)] cursor-pointer">
-            <div class="absolute inset-0 bg-rose-500/10"></div>
-            <i data-lucide="alert-circle" class="w-7 h-7 text-rose-400 mb-2 drop-shadow-[0_0_8px_rgba(244,63,94,0.5)] group-hover:scale-110 transition-transform duration-300"></i>
-            <span class="font-semibold text-sm">Use It Up</span>
-            <span class="text-xs text-gray-400 mt-1"><span id="expiring-count">0</span> Expiring</span>
-          </button>
-
-          <button onclick="generateRecipes('speed-mood')" class="snap-start shrink-0 w-32 h-32 rounded-2xl bg-white/5 border border-blue-500/30 flex flex-col items-center justify-center p-4 relative overflow-hidden group transition-all duration-200 hover:scale-[1.02] hover:border-blue-400 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] active:scale-[0.96] active:border-blue-500 active:shadow-[0_0_20px_rgba(59,130,246,0.6)] cursor-pointer">
-            <div class="absolute inset-0 bg-blue-500/10"></div>
-            <i data-lucide="clock" class="w-7 h-7 text-blue-400 mb-2 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] group-hover:scale-110 transition-transform duration-300"></i>
-            <span class="font-semibold text-sm">Under 15m</span>
-            <span class="text-xs text-gray-400 mt-1">Speed & Mood</span>
-          </button>
-
-          <button onclick="generateRecipes('chef-secret')" class="snap-start shrink-0 w-32 h-32 rounded-2xl bg-white/5 border border-amber-500/30 flex flex-col items-center justify-center p-4 relative overflow-hidden group transition-all duration-200 hover:scale-[1.02] hover:border-amber-400 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)] active:scale-[0.96] active:border-amber-500 active:shadow-[0_0_20px_rgba(245,158,11,0.6)] cursor-pointer">
-            <div class="absolute inset-0 bg-amber-500/10"></div>
-            <i data-lucide="flame" class="w-7 h-7 text-amber-400 mb-2 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] group-hover:scale-110 transition-transform duration-300"></i>
-            <span class="font-semibold text-sm text-center leading-tight">Chef's Secret</span>
-            <span class="text-xs text-gray-400 mt-1">Flavor Pairings</span>
-          </button>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== TAB 2: PANTRY ==================== -->
-    <div id="tab-pantry" class="tab-content hidden flex-col h-full space-y-6">
-      <h2 class="text-2xl font-bold text-white">Master Inventory</h2>
-      <form id="pantry-form" class="relative flex items-center">
-        <div class="absolute left-4 text-gray-400">
-          <i data-lucide="search" class="w-5 h-5"></i>
-        </div>
-        <input type="text" id="pantry-input" placeholder="Add ingredients..." class="w-full bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500/50 transition-colors">
-        <button type="button" id="btn-mic" class="absolute right-2 p-2 rounded-full text-gray-400 hover:text-white transition-colors">
-          <i data-lucide="mic" class="w-5 h-5"></i>
-        </button>
-      </form>
-
-      <div id="pantry-list" class="flex-1 overflow-y-auto pb-20 space-y-6 hide-scrollbar">
-        <!-- Rendered via JS -->
-      </div>
-
-      <div class="fixed bottom-24 left-0 right-0 flex justify-center pointer-events-none z-20">
-        <button id="btn-generate-pantry" onclick="generateRecipes('generate')" class="pointer-events-auto flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-600 text-white font-semibold shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-95 transition-transform hover:bg-emerald-500 hidden">
-          <i data-lucide="sparkles" class="w-5 h-5"></i> Generate Meals
-        </button>
-      </div>
-    </div>
-
-    <!-- ==================== TAB 3: SUGGESTIONS ==================== -->
-    <div id="tab-suggest" class="tab-content hidden flex-col h-full space-y-6">
-      <h2 class="text-2xl font-bold text-white mb-2">Taste Profile</h2>
-      <p id="suggest-subtitle" class="text-sm text-gray-400">Save some recipes to help us learn your taste profile!</p>
-
-      <div class="flex-1 flex flex-col items-center justify-center space-y-6 -mt-10">
-        <div class="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center relative">
-          <div class="absolute inset-0 rounded-full border border-amber-500/50 animate-ping opacity-20"></div>
-          <i data-lucide="sparkles" class="w-10 h-10 text-amber-400"></i>
-        </div>
-        
-        <div class="text-center max-w-xs">
-          <h3 id="suggest-title" class="text-lg font-bold text-white mb-2">Try popular chef-curated meals</h3>
-          <p class="text-sm text-gray-400 mb-6">We will analyze your pantry items to generate 3 custom recommendations.</p>
-          <button onclick="generateRecipes('suggestions')" class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-amber-500 text-amber-950 font-bold shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-95 transition-transform">
-            Generate Now <i data-lucide="arrow-right" class="w-4 h-4"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== TAB 4: FAVORITES ==================== -->
-    <div id="tab-favorites" class="tab-content hidden space-y-4 pb-20">
-      <h2 class="text-2xl font-bold text-white mb-6">Saved Recipes</h2>
-      <div id="favorites-list" class="space-y-4">
-        <!-- Rendered via JS -->
-      </div>
-    </div>
-
-  </div> <!-- End Main Content -->
-
-  <!-- ==================== BOTTOM NAV ==================== -->
-  <nav class="absolute bottom-0 left-0 right-0 safe-nav-pb bg-[#121826]/80 backdrop-blur-xl border-t border-white/10 flex justify-around items-center px-2 py-3 z-40">
-    <button onclick="switchTab('home')" id="nav-home" class="nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 text-blue-500 relative">
-      <i data-lucide="home" class="w-6 h-6 drop-shadow-[0_0_8px_currentColor]"></i>
-      <span class="text-[10px] font-medium tracking-wide">Home</span>
-      <div class="nav-indicator absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-current transition-opacity"></div>
-    </button>
-    
-    <button onclick="switchTab('pantry')" id="nav-pantry" class="nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 text-gray-500 hover:text-gray-300 relative">
-      <i data-lucide="list" class="w-6 h-6"></i>
-      <span class="text-[10px] font-medium tracking-wide">Pantry</span>
-      <div class="nav-indicator absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-current opacity-0 transition-opacity"></div>
-    </button>
-    
-    <button onclick="switchTab('suggest')" id="nav-suggest" class="nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 text-gray-500 hover:text-gray-300 relative">
-      <i data-lucide="sparkles" class="w-6 h-6"></i>
-      <span class="text-[10px] font-medium tracking-wide">Suggest</span>
-      <div class="nav-indicator absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-current opacity-0 transition-opacity"></div>
-    </button>
-    
-    <button onclick="switchTab('favorites')" id="nav-favorites" class="nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 text-gray-500 hover:text-gray-300 relative">
-      <i data-lucide="heart" class="w-6 h-6"></i>
-      <span class="text-[10px] font-medium tracking-wide">Saved</span>
-      <div class="nav-indicator absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-current opacity-0 transition-opacity"></div>
-    </button>
-  </nav>
-
-  <!-- ==================== RECIPE SLIDE OVER ==================== -->
-  <div id="recipe-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden fade-in" onclick="closeSlideOver()"></div>
-  <div id="recipe-modal" class="slide-over fixed inset-x-0 bottom-0 top-16 bg-[#0f172a] rounded-t-3xl shadow-2xl z-50 flex flex-col overflow-hidden border-t border-white/10 max-w-2xl mx-auto">
-    <div class="flex justify-between items-center p-4 border-b border-white/10 shrink-0">
-      <h2 class="text-xl font-bold">Recipe Results</h2>
-      <button onclick="closeSlideOver()" class="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-gray-400 hover:text-white active:scale-95">
-        <i data-lucide="x" class="w-5 h-5"></i>
+      <button class="nav-btn" id="nav-pantry" onclick="switchTab('pantry')">
+        <span style="font-size: 1.15rem;">🥬</span>
+        <span>Pantry</span>
       </button>
+      <button class="nav-btn" id="nav-suggestions" onclick="switchTab('suggestions')">
+        <span style="font-size: 1.15rem;">💡</span>
+        <span>Ideas</span>
+      </button>
+      <button class="nav-btn" id="nav-favorites" onclick="switchTab('favorites')">
+        <span style="font-size: 1.15rem;">❤️</span>
+        <span>Favorites</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- OVERLAY: RESULTS VIEW -->
+  <div id="overlay-results" class="overlay">
+    <div class="overlay-header">
+      <h2 style="font-size: 1.15rem; font-weight: 800; color: #6ee7b7;" id="results-title">Recipe Results</h2>
+      <button class="icon-btn" onclick="closeOverlay('overlay-results')">✕</button>
     </div>
     
-    <div class="flex-1 overflow-y-auto px-4 py-6 space-y-6 hide-scrollbar relative">
-      <!-- Loading State -->
-      <div id="recipe-loading" class="flex flex-col items-center justify-center h-full space-y-4 text-emerald-400 hidden">
-        <i data-lucide="loader-2" class="w-10 h-10 animate-spin"></i>
-        <p class="text-sm font-medium animate-pulse">Chef AI is cooking...</p>
-      </div>
-      
-      <!-- Results Container -->
-      <div id="recipe-results" class="space-y-8 hidden fade-in">
-        <!-- Rendered via JS -->
-      </div>
+    <div class="portion-toggle">
+      <button class="portion-btn active" id="btn-portion-2" onclick="setPortion(2)">1–2 Servings</button>
+      <button class="portion-btn" id="btn-portion-4" onclick="setPortion(4)">3–4 Servings</button>
+    </div>
+
+    <div id="results-loading" style="display: none; text-align: center; padding: 40px 0;">
+      <div style="font-size: 1.5rem; animation: float 1s infinite alternate;">🍳</div>
+      <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 10px;">Consulting Chef Flash...</div>
+    </div>
+
+    <div id="results-container"></div>
+  </div>
+
+  <!-- OVERLAY: USE IT UP -->
+  <div id="overlay-useit" class="overlay">
+    <div class="overlay-header">
+      <h2 style="font-size: 1.15rem; font-weight: 800; color: #fda4af;">Use It Up (Expiring)</h2>
+      <button class="icon-btn" onclick="closeOverlay('overlay-useit')">✕</button>
+    </div>
+    <div id="useit-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
+    <button class="btn-primary" style="background:var(--ruby); color:#fff;" onclick="generateRescueMeal()">Generate Rescue Meal</button>
+  </div>
+
+  <!-- OVERLAY: SPEED/MOOD -->
+  <div id="overlay-speed" class="overlay">
+    <div class="overlay-header">
+      <h2 style="font-size: 1.15rem; font-weight: 800; color: #93c5fd;">Speed & Mood</h2>
+      <button class="icon-btn" onclick="closeOverlay('overlay-speed')">✕</button>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <button class="card" style="padding:20px; font-weight:700;" onclick="filterAndGenerate('Under 15 Minutes')">⚡ Under 15m</button>
+      <button class="card" style="padding:20px; font-weight:700;" onclick="filterAndGenerate('One-Pan Meal')">🍳 One-Pan</button>
+      <button class="card" style="padding:20px; font-weight:700;" onclick="filterAndGenerate('High Protein')">🥩 High Protein</button>
+      <button class="card" style="padding:20px; font-weight:700;" onclick="filterAndGenerate('Comfort Food')">🍲 Comfort</button>
     </div>
   </div>
 
-  <!-- ==================== SETTINGS MODAL ==================== -->
-  <div id="settings-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 fade-in">
-    <div class="bg-[#121826] border border-white/10 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
-      <div class="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
-        <div class="flex items-center gap-2">
-          <i data-lucide="settings" class="w-4 h-4 text-emerald-400"></i>
-          <h3 class="font-bold text-white">App Settings</h3>
-        </div>
-        <button onclick="document.getElementById('settings-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition-colors active:scale-95">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      
-      <div class="p-5 space-y-4">
-        <div id="api-key-warning" class="bg-amber-500/10 border border-amber-500/20 text-amber-200 text-sm p-3 rounded-xl flex gap-3 hidden">
-          <i data-lucide="key" class="w-5 h-5 shrink-0 text-amber-400 mt-0.5"></i>
-          <p>An API key is required to use the AI features. Your key is stored securely in your device's local storage.</p>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Google AI Studio API Key</label>
-          <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors placeholder-gray-600 font-mono text-sm">
-        </div>
-        <button onclick="saveApiKey()" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:bg-emerald-500 transition-colors active:scale-[0.98]">
-          Save Key
-        </button>
-      </div>
+  <!-- MODAL: SETTINGS -->
+  <div id="settings-modal" class="overlay">
+    <div class="overlay-header">
+      <h2 style="font-size: 1.15rem; font-weight: 800;">Settings</h2>
+      <button class="icon-btn" onclick="closeOverlay('settings-modal')">✕</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <label style="font-size:0.85rem; color:#94a3b8;">Google AI Studio API Key:</label>
+      <input type="password" id="api-key-input" class="pantry-input" placeholder="Paste your API key here..." onblur="resetViewportScroll()">
+      <button class="btn-primary" onclick="saveApiKey()">Save API Key</button>
     </div>
   </div>
 
-
-  <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    // --- STATE & INITIALIZATION ---
-    let pantryItems = JSON.parse(localStorage.getItem('pantryItems') || '[]');
-    let favorites = [];
-    let currentRecipes = [];
-    let db;
-    
-    // UI Constants
-    const CATEGORIES = [
-      { id: 'Proteins', label: '🥩 Proteins' },
-      { id: 'Produce', label: '🥦 Produce' },
-      { id: 'Dairy & Cold', label: '🧀 Dairy & Cold' },
-      { id: 'Pantry & Grains', label: '🥫 Pantry & Grains' },
-      { id: 'Spices, Oils & Sauces', label: '🧂 Spices, Oils & Sauces' },
+    // State
+    let pantryItems = JSON.parse(localStorage.getItem('pantry_items') || '[]');
+    let currentServings = 2;
+    const MODEL_NAME = 'gemini-3.6-flash';
+
+    // Daily Ticker Logic (Deterministic seed)
+    const sayings = [
+      "What's on the menu today?",
+      "What are we cooking?",
+      "What's the vibe tonight?",
+      "Raid the fridge.",
+      "Let's make something great.",
+      "Chef mode: activated.",
+      "Fuel up."
     ];
-    const TABS = {
-      'home': { color: 'text-blue-500' },
-      'pantry': { color: 'text-emerald-500' },
-      'suggest': { color: 'text-amber-500' },
-      'favorites': { color: 'text-rose-500' }
+    function initDailyTicker() {
+      const today = new Date().toISOString().slice(0, 10);
+      let hash = 0;
+      for (let i = 0; i < today.length; i++) hash += today.charCodeAt(i);
+      const text = sayings[hash % sayings.length];
+      const tickerEl = document.getElementById('daily-ticker');
+      if (tickerEl) tickerEl.textContent = text;
+    }
+
+    // Viewport reset fix for iOS keyboard displacement
+    function resetViewportScroll() {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+    }
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      resetViewportScroll();
+      document.querySelectorAll('.tab-content').forEach(el => {
+        if (el) el.classList.remove('active');
+      });
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.add('active');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn) btn.classList.remove('active');
+      });
+      const activeBtn = document.getElementById(`nav-${tabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (tabId === 'home') updateHomeMetrics();
+      if (tabId === 'pantry') renderPantry();
+      if (tabId === 'favorites') renderFavorites();
+    }
+
+    // Modals & Overlays
+    function openOverlay(id) {
+      resetViewportScroll();
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active');
+      if (id === 'overlay-useit') renderUseItUpList();
+    }
+    function closeOverlay(id) {
+      resetViewportScroll();
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active');
+    }
+    function openModal(id) { openOverlay(id); }
+
+    // Settings
+    function saveApiKey() {
+      const input = document.getElementById('api-key-input');
+      if (!input) return;
+      const key = input.value.trim();
+      if (key) {
+        localStorage.setItem('gemini_api_key', key);
+        alert('API Key saved successfully!');
+        closeOverlay('settings-modal');
+      }
+    }
+
+    // Pantry Management
+    const CATEGORIES = {
+      Proteins: ['chicken', 'beef', 'steak', 'pork', 'turkey', 'egg', 'eggs', 'tofu', 'salmon', 'tuna', 'shrimp', 'bacon', 'beans'],
+      Produce: ['spinach', 'onion', 'garlic', 'tomato', 'potato', 'broccoli', 'lemon', 'lime', 'avocado', 'peppers', 'carrot', 'herbs'],
+      Dairy: ['milk', 'cheddar', 'cheese', 'butter', 'yogurt', 'parmesan', 'cream', 'mozzarella'],
+      Grains: ['rice', 'pasta', 'bread', 'flour', 'oats', 'quinoa', 'noodles', 'tortilla'],
+      Spices: ['oil', 'olive oil', 'salt', 'pepper', 'soy sauce', 'vinegar', 'honey', 'oregano', 'cumin', 'paprika']
     };
 
-    // Initialize App
-    document.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
-      initIndexedDB();
-      setupDailyTicker();
-      renderHomeStats();
-      renderPantry();
-      
-      // Settings Button
-      document.getElementById('btn-settings').addEventListener('click', () => {
-        document.getElementById('api-key-input').value = localStorage.getItem('gemini_api_key') || '';
-        document.getElementById('api-key-warning').classList.toggle('hidden', !!localStorage.getItem('gemini_api_key'));
-        document.getElementById('settings-modal').classList.remove('hidden');
-      });
+    function categorize(name) {
+      const lower = name.toLowerCase();
+      for (const [cat, keywords] of Object.entries(CATEGORIES)) {
+        if (keywords.some(k => lower.includes(k))) return cat;
+      }
+      return 'Grains';
+    }
 
-      // Pantry Input Form
-      document.getElementById('pantry-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const input = document.getElementById('pantry-input');
-        const val = input.value.trim();
-        if (!val) return;
-        
-        const items = val.split(/,|\band\b/i).map(i => i.trim()).filter(Boolean);
-        items.forEach(item => {
-          let cat = 'Pantry & Grains';
-          const lower = item.toLowerCase();
-          if (lower.match(/chicken|beef|pork|fish|tofu|egg/)) cat = 'Proteins';
-          else if (lower.match(/apple|banana|carrot|onion|garlic|lettuce|tomato/)) cat = 'Produce';
-          else if (lower.match(/milk|cheese|yogurt|butter/)) cat = 'Dairy & Cold';
-          else if (lower.match(/salt|pepper|oil|sauce|sugar/)) cat = 'Spices, Oils & Sauces';
-          
-          pantryItems.push({ id: Date.now().toString() + Math.random(), name: item, category: cat, expiringSoon: false });
+    function handleAddPantryItem() {
+      const input = document.getElementById('pantry-input');
+      if (!input) return;
+      const val = input.value.trim();
+      if (!val) return;
+
+      const rawItems = val.split(/,|\band\b/i).map(s => s.trim()).filter(Boolean);
+      rawItems.forEach(item => {
+        pantryItems.push({
+          id: Date.now() + Math.random(),
+          name: item,
+          category: categorize(item),
+          expiring: false
         });
-        
-        savePantry();
-        input.value = '';
       });
 
-      // Mic Button
-      const btnMic = document.getElementById('btn-mic');
-      btnMic.addEventListener('click', () => {
-        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!Speech) return alert('Speech recognition is not supported in this browser.');
-        const rec = new Speech();
-        rec.onstart = () => {
-          btnMic.classList.add('bg-rose-500', 'text-white', 'animate-pulse');
-          btnMic.classList.remove('text-gray-400');
-        };
-        rec.onresult = (e) => {
-          const text = e.results[0][0].transcript;
-          const input = document.getElementById('pantry-input');
-          input.value += (input.value ? ', ' : '') + text;
-        };
-        rec.onend = () => {
-          btnMic.classList.remove('bg-rose-500', 'text-white', 'animate-pulse');
-          btnMic.classList.add('text-gray-400');
-        };
-        rec.start();
-      });
-    });
-
-    // --- INDEXED DB (FAVORITES) ---
-    function initIndexedDB() {
-      const request = indexedDB.open('pantry_chef_db', 1);
-      request.onupgradeneeded = (e) => {
-        db = e.target.result;
-        if (!db.objectStoreNames.contains('favorites')) {
-          db.createObjectStore('favorites', { keyPath: 'id' });
-        }
-      };
-      request.onsuccess = (e) => {
-        db = e.target.result;
-        loadFavorites();
-      };
-    }
-
-    function loadFavorites() {
-      const tx = db.transaction('favorites', 'readonly');
-      tx.objectStore('favorites').getAll().onsuccess = (e) => {
-        favorites = e.target.result;
-        renderSuggestionsState();
-        renderFavorites();
-      };
-    }
-
-    function addFavorite(recipeData) {
-      const recipe = { ...recipeData, servings: '1-2', photoBase64: null, notes: '' };
-      const tx = db.transaction('favorites', 'readwrite');
-      tx.objectStore('favorites').put(recipe).onsuccess = () => loadFavorites();
-    }
-
-    function updateFavorite(recipe) {
-      const tx = db.transaction('favorites', 'readwrite');
-      tx.objectStore('favorites').put(recipe).onsuccess = () => loadFavorites();
-    }
-
-    function deleteFavorite(id) {
-      if(!confirm('Delete this recipe?')) return;
-      const tx = db.transaction('favorites', 'readwrite');
-      tx.objectStore('favorites').delete(id).onsuccess = () => loadFavorites();
-    }
-
-    // --- LOGIC & RENDERING ---
-    function savePantry() {
-      localStorage.setItem('pantryItems', JSON.stringify(pantryItems));
+      localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
+      input.value = '';
+      resetViewportScroll();
       renderPantry();
-      renderHomeStats();
+      updateHomeMetrics();
     }
 
     function toggleExpiring(id) {
-      const item = pantryItems.find(i => i.id === id);
-      if (item) item.expiringSoon = !item.expiringSoon;
-      savePantry();
+      pantryItems = pantryItems.map(item => item.id === id ? { ...item, expiring: !item.expiring } : item);
+      localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
+      renderPantry();
+      updateHomeMetrics();
     }
 
-    function deletePantryItem(id) {
-      pantryItems = pantryItems.filter(i => i.id !== id);
-      savePantry();
-    }
-
-    function renderHomeStats() {
-      document.getElementById('inventory-count').innerText = pantryItems.length;
-      document.getElementById('expiring-count').innerText = pantryItems.filter(i => i.expiringSoon).length;
+    function deletePantryItem(id, e) {
+      e.stopPropagation();
+      pantryItems = pantryItems.filter(item => item.id !== id);
+      localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
+      renderPantry();
+      updateHomeMetrics();
     }
 
     function renderPantry() {
-      const list = document.getElementById('pantry-list');
-      const btnGenerate = document.getElementById('btn-generate-pantry');
-      
-      btnGenerate.classList.toggle('hidden', pantryItems.length === 0);
-      
-      if (pantryItems.length === 0) {
-        list.innerHTML = `
-          <div class="text-center text-gray-500 mt-10">
-            <p>Your pantry is empty.</p>
-            <p class="text-sm mt-2">Add some items above to get started.</p>
-          </div>
-        `;
-        return;
-      }
+      const container = document.getElementById('pantry-categories');
+      if (!container) return;
+      container.innerHTML = '';
 
-      let html = '';
-      CATEGORIES.forEach(cat => {
-        const items = pantryItems.filter(i => i.category === cat.id);
-        if (items.length === 0) return;
-        
-        html += `
-          <div>
-            <h3 class="text-sm font-semibold text-gray-400 mb-3">${cat.label}</h3>
-            <div class="flex flex-wrap gap-2">
-              ${items.map(item => `
-                <div onclick="toggleExpiring('${item.id}')" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border cursor-pointer transition-all ${item.expiringSoon ? 'bg-rose-500/10 border-rose-500/50 text-rose-200 shadow-[0_0_10px_rgba(244,63,94,0.2)]' : 'bg-white/5 border-white/10 text-gray-200 hover:bg-white/10'}">
-                  ${item.name}
-                  <button onclick="event.stopPropagation(); deletePantryItem('${item.id}')" class="ml-1 p-0.5 rounded-full hover:bg-white/20 text-gray-400 hover:text-white transition-colors">
-                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                  </button>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
+      const grouped = {};
+      pantryItems.forEach(item => {
+        if (!grouped[item.category]) grouped[item.category] = [];
+        grouped[item.category].push(item);
       });
-      list.innerHTML = html;
-      lucide.createIcons();
+
+      Object.keys(grouped).forEach(cat => {
+        const group = document.createElement('div');
+        group.className = 'category-group';
+        group.innerHTML = `<div class="category-title">${cat}</div><div class="chip-cloud" id="cat-${cat}"></div>`;
+        container.appendChild(group);
+
+        const cloud = group.querySelector(`#cat-${cat}`);
+        grouped[cat].forEach(item => {
+          const chip = document.createElement('div');
+          chip.className = `chip ${item.expiring ? 'expiring' : ''}`;
+          chip.innerHTML = `<span>${item.name}</span><span class="chip-del" onclick="deletePantryItem(${item.id}, event)">×</span>`;
+          chip.onclick = () => toggleExpiring(item.id);
+          cloud.appendChild(chip);
+        });
+      });
     }
 
-    function renderSuggestionsState() {
-      const hasFavs = favorites.length > 0;
-      document.getElementById('suggest-subtitle').innerText = hasFavs 
-        ? 'Based on your saved dishes, we found these matches in your pantry.' 
-        : 'Save some recipes to help us learn your taste profile!';
-      document.getElementById('suggest-title').innerText = hasFavs 
-        ? 'Ready for tailored suggestions?' 
-        : 'Try popular chef-curated meals';
+    function updateHomeMetrics() {
+      const countEl = document.getElementById('home-pantry-count');
+      if (countEl) countEl.textContent = `${pantryItems.length} Items Logged`;
+
+      const expCount = pantryItems.filter(i => i.expiring).length;
+      const sqExp = document.getElementById('sq-expiring-count');
+      if (sqExp) sqExp.textContent = `${expCount} tagged`;
     }
 
-    // --- FAVORITES RENDERING ---
-    function renderFavorites() {
-      const list = document.getElementById('favorites-list');
-      if (favorites.length === 0) {
-        list.innerHTML = `
-          <div class="pt-10 text-center text-gray-500">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center text-2xl">🍽️</div>
-            <p>No saved recipes yet.</p>
-            <p class="text-sm mt-2">Recipes you save will appear here offline.</p>
-          </div>
-        `;
+    function renderUseItUpList() {
+      const list = document.getElementById('useit-list');
+      if (!list) return;
+      list.innerHTML = '';
+      const expiring = pantryItems.filter(i => i.expiring);
+      if (!expiring.length) {
+        list.innerHTML = `<div style="color:#94a3b8; font-size:0.85rem; padding:10px 0;">No items currently flagged as expiring soon. Tap items in your pantry to flag them.</div>`;
         return;
       }
-
-      list.innerHTML = favorites.map(recipe => `
-        <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition-all">
-          <div class="p-3 flex gap-4 items-center cursor-pointer active:bg-white/5" onclick="toggleFavoriteCard('${recipe.id}')">
-            <div class="w-20 h-20 shrink-0 rounded-xl bg-black/20 flex items-center justify-center overflow-hidden relative">
-              ${recipe.photoBase64 
-                ? `<img src="${recipe.photoBase64}" class="w-full h-full object-cover" />` 
-                : `<span class="text-3xl">${recipe.foodEmoji}</span>`
-              }
-            </div>
-            <div class="flex-1 min-w-0 py-1">
-              <h3 class="font-bold text-white truncate mb-1">${recipe.title}</h3>
-              <p class="text-xs text-gray-400 line-clamp-2 leading-snug">${recipe.description || ''}</p>
-              <div class="flex gap-3 mt-2 text-xs font-medium text-gray-500">
-                <span>⏱️ ${recipe.cookTime}</span>
-                <span>👥 ${recipe.servings}</span>
-              </div>
-            </div>
-            <div class="text-gray-500 pr-2">
-              <i data-lucide="chevron-down" class="w-5 h-5 chevron-icon transition-transform" id="chev-${recipe.id}"></i>
-            </div>
-          </div>
-          
-          <div id="expand-${recipe.id}" class="hidden border-t border-white/5 bg-black/20 px-4 py-4 space-y-4">
-            <div class="flex justify-between items-center">
-              <input type="file" accept="image/*" class="hidden" id="file-${recipe.id}" onchange="handlePhotoUpload(event, '${recipe.id}')">
-              <button onclick="document.getElementById('file-${recipe.id}').click()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 text-sm font-medium hover:bg-white/20 transition-colors">
-                <i data-lucide="camera" class="w-4 h-4"></i> ${recipe.photoBase64 ? 'Change Photo' : 'Add Photo'}
-              </button>
-              <button onclick="deleteFavorite('${recipe.id}')" class="p-1.5 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            </div>
-            <div>
-              <div class="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-300">
-                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Personal Notes
-              </div>
-              <textarea onchange="updateNote('${recipe.id}', this.value)" placeholder="Add your tweaks..." class="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm text-gray-300 focus:outline-none focus:border-white/20 resize-none h-20 placeholder-gray-600">${recipe.notes || ''}</textarea>
-            </div>
-            <div>
-              <h4 class="text-sm font-semibold text-gray-300 mb-2">Ingredients</h4>
-              <ul class="text-sm text-gray-400 space-y-1">
-                ${recipe.ingredients.map(ing => `<li>• ${ing}</li>`).join('')}
-              </ul>
-            </div>
-          </div>
-        </div>
-      `).join('');
-      lucide.createIcons();
+      expiring.forEach(i => {
+        const row = document.createElement('div');
+        row.className = 'card';
+        row.style.padding = '10px 14px';
+        row.textContent = `⚠️ ${i.name}`;
+        list.appendChild(row);
+      });
     }
 
-    function toggleFavoriteCard(id) {
-      const content = document.getElementById(`expand-${id}`);
-      const chevron = document.getElementById(`chev-${id}`);
-      if (content.classList.contains('hidden')) {
-        content.classList.remove('hidden');
-        content.classList.add('fade-in');
-        chevron.style.transform = 'rotate(180deg)';
-      } else {
-        content.classList.add('hidden');
-        chevron.style.transform = 'rotate(0deg)';
-      }
-    }
-
-    function updateNote(id, note) {
-      const rec = favorites.find(f => f.id === id);
-      if(rec) { rec.notes = note; updateFavorite(rec); }
-    }
-
-    // --- PHOTO RESIZE ENGINE ---
-    function handlePhotoUpload(e, id) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX = 800;
-          let w = img.width, h = img.height;
-          if (w > MAX) { h = Math.round((h * MAX) / w); w = MAX; }
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          const base64 = canvas.toDataURL('image/jpeg', 0.8);
-          
-          const rec = favorites.find(f => f.id === id);
-          if (rec) { rec.photoBase64 = base64; updateFavorite(rec); }
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // --- SETTINGS / API KEY ---
-    function saveApiKey() {
-      const val = document.getElementById('api-key-input').value.trim();
-      localStorage.setItem('gemini_api_key', val);
-      document.getElementById('settings-modal').classList.add('hidden');
-    }
-
-    // --- GEMINI API CALL ---
-    async function generateRecipes(type) {
-      const apiKey = localStorage.getItem('gemini_api_key');
+    // Gemini API Direct Fetch
+    async function callGemini(promptText) {
+      const apiKey = (localStorage.getItem('gemini_api_key') || '').trim();
       if (!apiKey) {
-        document.getElementById('api-key-warning').classList.remove('hidden');
-        document.getElementById('settings-modal').classList.remove('hidden');
-        return;
+        openModal('settings-modal');
+        throw new Error('API Key missing. Please set your key in Settings.');
       }
 
-      openSlideOver();
-      document.getElementById('recipe-loading').classList.remove('hidden');
-      document.getElementById('recipe-results').classList.add('hidden');
-      document.getElementById('recipe-results').innerHTML = '';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [{
+          parts: [{ text: promptText }]
+        }]
+      };
 
-      const itemsStr = pantryItems.map(i => i.name).join(', ');
-      const prompt = `You are a master chef. Create 5 distinct recipes based on the user's pantry.
-Pantry items: ${itemsStr || 'None. Suggest some basics.'}
-Request type: ${type}.
-Categorize the recipes into two tiers:
-- Tier 1: "Ready Right Now" (Uses 100% pantry match, no missing items).
-- Tier 2: "Missing 1 Minor Item" (Needs exactly 1 minor item not in pantry).
-Return a JSON array of 5 objects exactly matching this schema, without markdown formatting:
-[{"tier": "...", "title": "...", "foodEmoji": "...", "cookTime": "...", "difficulty": "...", "missingItem": "...", "suggestedSwap": "...", "ingredients": ["..."], "instructions": ["..."], "chefProTip": "...", "whyYoullLoveThis": "..."}]`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+      return JSON.parse(cleanJson);
+    }
+
+    // Recipe Generation Handlers
+    function setPortion(num) {
+      currentServings = num;
+      document.getElementById('btn-portion-2')?.classList.toggle('active', num === 2);
+      document.getElementById('btn-portion-4')?.classList.toggle('active', num === 4);
+    }
+
+    async function generateAndDisplayRecipes(prompt, title) {
+      openOverlay('overlay-results');
+      document.getElementById('results-title').textContent = title;
+      const loader = document.getElementById('results-loading');
+      const container = document.getElementById('results-container');
+      loader.style.display = 'block';
+      container.innerHTML = '';
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          })
-        });
-        const data = await res.json();
-        
-        if (data.error) throw new Error(data.error.message);
-        
-        let text = data.candidates[0].content.parts[0].text;
-        currentRecipes = JSON.parse(text).map(r => ({ ...r, id: Date.now().toString() + Math.random() }));
-        
-        document.getElementById('recipe-loading').classList.add('hidden');
-        renderRecipeResults();
-      } catch (e) {
-        console.error(e);
-        alert('Failed to generate recipes. Please check your API key.');
-        closeSlideOver();
-      }
-    }
+        const fullPrompt = `${prompt}
+Format response strictly as a JSON array of 5 recipe objects with keys:
+[
+  {
+    "title": "Dish Name",
+    "emoji": "🍳",
+    "time": "15 mins",
+    "tier": "100% Match" | "Missing 1 Item",
+    "missing": "None" or "item name (suggest swap)",
+    "ingredients": ["1 cup rice", "..."],
+    "instructions": ["Step 1...", "Step 2..."],
+    "chefTip": "1 sentence culinary technique tip."
+  }
+]
+Scale for ${currentServings} servings.`;
 
-    function renderRecipeResults() {
-      const container = document.getElementById('recipe-results');
-      container.classList.remove('hidden');
-      
-      const t1 = currentRecipes.filter(r => r.tier.includes('Ready'));
-      const t2 = currentRecipes.filter(r => r.tier.includes('Missing'));
-      
-      let html = '';
-      if (t1.length > 0) {
-        html += `<section><h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 px-2">✨ Ready Right Now</h3><div class="space-y-4">${t1.map(r => buildRecipeCard(r)).join('')}</div></section>`;
-      }
-      if (t2.length > 0) {
-        html += `<section><h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 px-2 mt-8">🛒 Missing 1 Minor Item</h3><div class="space-y-4">${t2.map(r => buildRecipeCard(r)).join('')}</div></section>`;
-      }
-      container.innerHTML = html;
-      lucide.createIcons();
-    }
+        const recipes = await callGemini(fullPrompt);
+        loader.style.display = 'none';
 
-    function buildRecipeCard(recipe) {
-      const isSaved = favorites.some(f => f.title === recipe.title); // rough check
-      return `
-        <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden cursor-pointer active:scale-[0.99] transition-transform" onclick="toggleGenCard('${recipe.id}')">
-          <div class="p-4 relative">
-            ${recipe.missingItem ? `
-              <div class="mb-3 flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl">
-                <i data-lucide="info" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
-                <div class="text-xs text-amber-200"><span class="font-bold">Missing:</span> ${recipe.missingItem} <br/><span class="font-bold">Swap:</span> ${recipe.suggestedSwap}</div>
-              </div>
-            ` : ''}
-            <div class="flex gap-4">
-              <div class="text-4xl bg-white/10 w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">${recipe.foodEmoji}</div>
-              <div class="flex-1 min-w-0 pr-10">
-                <h4 class="font-bold text-white text-lg leading-tight mb-1">${recipe.title}</h4>
-                <div class="flex flex-wrap gap-2 text-xs font-medium">
-                  <span class="px-2 py-0.5 rounded-md bg-white/10 text-gray-300">⏱️ ${recipe.cookTime}</span>
-                  <span class="px-2 py-0.5 rounded-md bg-white/10 text-gray-300">⚡ ${recipe.difficulty}</span>
+        recipes.forEach(r => {
+          const card = document.createElement('div');
+          card.className = 'recipe-card';
+          card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.4rem;">${r.emoji || '🍽️'}</span>
+                <div>
+                  <div style="font-weight:700; font-size:0.95rem;">${r.title}</div>
+                  <div style="font-size:0.75rem; color:#94a3b8;">${r.time} • <span style="color:#34d399;">${r.tier}</span></div>
                 </div>
               </div>
+              <button class="icon-btn" onclick="saveToFavorites('${escape(JSON.stringify(r))}', event)">❤️</button>
             </div>
-            <button onclick="event.stopPropagation(); saveGeneratedRecipe('${recipe.id}', this)" class="absolute top-4 right-4 p-2.5 rounded-full bg-black/20 backdrop-blur-md">
-              <i data-lucide="heart" class="w-5 h-5 ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}"></i>
-            </button>
-          </div>
-          
-          <div id="gen-expand-${recipe.id}" class="hidden border-t border-white/5 bg-black/20 p-4 space-y-5 fade-in">
-            ${recipe.whyYoullLoveThis ? `<div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3"><h5 class="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-1">Why You'll Love This</h5><p class="text-sm text-emerald-100">${recipe.whyYoullLoveThis}</p></div>` : ''}
-            <div>
-              <h5 class="text-sm font-bold text-gray-300 mb-2">Ingredients</h5>
-              <ul class="space-y-1.5">${recipe.ingredients.map(ing => `<li class="flex gap-2 text-sm text-gray-400"><div class="w-1.5 h-1.5 rounded-full bg-blue-500/50 mt-1.5 shrink-0"></div>${ing}</li>`).join('')}</ul>
+            ${r.missing && r.missing !== 'None' ? `<div style="font-size:0.75rem; color:#fde68a; margin-top:6px;">⚠️ Swap: ${r.missing}</div>` : ''}
+            <div class="recipe-details">
+              <strong>Ingredients:</strong>
+              <ul style="margin: 6px 0 10px 18px;">${r.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
+              <strong>Instructions:</strong>
+              <ol style="margin: 6px 0 10px 18px;">${r.instructions.map(s => `<li>${s}</li>`).join('')}</ol>
+              <div style="color:#6ee7b7; font-size:0.78rem;">💡 ${r.chefTip}</div>
             </div>
-            <div>
-              <h5 class="text-sm font-bold text-gray-300 mb-2">Instructions</h5>
-              <div class="space-y-3">${recipe.instructions.map((step, i) => `<div class="flex gap-3 text-sm"><div class="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-xs font-bold text-gray-400 shrink-0 mt-0.5">${i + 1}</div><p class="text-gray-300 leading-relaxed">${step}</p></div>`).join('')}</div>
-            </div>
-            ${recipe.chefProTip ? `<div class="flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent border-l-2 border-amber-500"><div class="text-lg">👨‍🍳</div><div><h5 class="text-xs font-bold text-amber-500 uppercase">Chef's Pro Tip</h5><p class="text-sm text-amber-200/80 mt-0.5">${recipe.chefProTip}</p></div></div>` : ''}
-          </div>
-        </div>
-      `;
-    }
+          `;
+          card.onclick = (e) => {
+            if (e.target.tagName !== 'BUTTON') card.classList.toggle('expanded');
+          };
+          container.appendChild(card);
+        });
 
-    function toggleGenCard(id) {
-      const el = document.getElementById(`gen-expand-${id}`);
-      el.classList.toggle('hidden');
-    }
-
-    function saveGeneratedRecipe(id, btnEl) {
-      const recipe = currentRecipes.find(r => r.id === id);
-      if (recipe) {
-        addFavorite(recipe);
-        const icon = btnEl.querySelector('i');
-        icon.classList.remove('text-gray-400');
-        icon.classList.add('fill-rose-500', 'text-rose-500');
+      } catch (err) {
+        loader.style.display = 'none';
+        container.innerHTML = `<div style="color:#f87171; font-size:0.85rem; padding:20px;">Failed to generate recipes: ${err.message}</div>`;
       }
     }
 
-    // --- UI HELPERS ---
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-      document.getElementById(`tab-${tabId}`).classList.add('flex'); // For flex layouts
-      
-      // Update Nav
-      document.querySelectorAll('.nav-btn').forEach(el => {
-        el.className = 'nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 text-gray-500 hover:text-gray-300 relative';
-        el.querySelector('i').classList.remove('drop-shadow-[0_0_8px_currentColor]');
-        el.querySelector('.nav-indicator').classList.remove('opacity-100');
-        el.querySelector('.nav-indicator').classList.add('opacity-0');
+    function generateFromMasterPantry() {
+      if (!pantryItems.length) return alert('Add ingredients to your pantry first!');
+      const items = pantryItems.map(i => i.name).join(', ');
+      generateAndDisplayRecipes(`Create 5 varied recipes prioritizing these ingredients: ${items}.`, 'Pantry Recipes');
+    }
+
+    function triggerSurpriseMe() {
+      if (!pantryItems.length) return alert('Add ingredients to your pantry first!');
+      const items = pantryItems.map(i => i.name).join(', ');
+      generateAndDisplayRecipes(`Create 5 fun, unexpected chef recipes utilizing some of these ingredients: ${items}.`, 'Surprise Dishes');
+    }
+
+    function startQuickMeal() {
+      const spoken = prompt('Enter or speak ingredients currently on hand:');
+      if (spoken) {
+        generateAndDisplayRecipes(`Create 5 quick meals using strictly these ingredients: ${spoken}.`, 'Quick Meal');
+      }
+    }
+
+    function generateRescueMeal() {
+      closeOverlay('overlay-useit');
+      const expiring = pantryItems.filter(i => i.expiring).map(i => i.name).join(', ');
+      if (!expiring) return alert('No expiring items flagged.');
+      generateAndDisplayRecipes(`Create 5 recipes that prioritize rescuing and using up these expiring ingredients immediately: ${expiring}.`, 'Rescue Meals');
+    }
+
+    function filterAndGenerate(mood) {
+      closeOverlay('overlay-speed');
+      const items = pantryItems.map(i => i.name).join(', ');
+      generateAndDisplayRecipes(`Create 5 recipes fitting the mood "${mood}" utilizing: ${items}.`, `${mood} Meals`);
+    }
+
+    async function triggerChefSecret() {
+      if (!pantryItems.length) return alert('Add items to your pantry first!');
+      const items = pantryItems.map(i => i.name).join(', ');
+      openOverlay('overlay-results');
+      document.getElementById('results-title').textContent = "Chef's Flavor Secret";
+      const loader = document.getElementById('results-loading');
+      const container = document.getElementById('results-container');
+      loader.style.display = 'block';
+      container.innerHTML = '';
+
+      try {
+        const prompt = `Look at these pantry ingredients: ${items}.
+Pick two unexpected ingredients from this list that chemically or culinarily harmonize.
+Explain the secret food chemistry in 2 sentences, then provide 2 quick dishes that use this secret trick.
+Return strict JSON:
+[
+  {
+    "title": "Pairing Trick: ...",
+    "emoji": "✨",
+    "time": "15m",
+    "tier": "Secret Chemistry",
+    "ingredients": ["..."],
+    "instructions": ["..."],
+    "chefTip": "The flavor secret explanation."
+  }
+]`;
+        const res = await callGemini(prompt);
+        loader.style.display = 'none';
+        res.forEach(r => {
+          const card = document.createElement('div');
+          card.className = 'recipe-card expanded';
+          card.innerHTML = `
+            <div style="font-weight:700; font-size:1rem; color:#fde68a;">${r.title}</div>
+            <div class="recipe-details" style="display:block;">
+              <p style="margin-bottom:8px; color:#a7f3d0;">${r.chefTip}</p>
+              <strong>Instructions:</strong>
+              <ol style="margin-left:18px;">${r.instructions.map(s => `<li>${s}</li>`).join('')}</ol>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        loader.style.display = 'none';
+        container.innerHTML = `<div style="color:#f87171; font-size:0.85rem; padding:20px;">${err.message}</div>`;
+      }
+    }
+
+    // Suggestions Tab
+    async function fetchSuggestions() {
+      const container = document.getElementById('suggestions-container');
+      container.innerHTML = '<div style="color:#94a3b8; font-size:0.85rem; text-align:center; padding:20px;">Analyzing culinary profiles...</div>';
+      const favs = JSON.parse(localStorage.getItem('pantry_favs') || '[]');
+      const items = pantryItems.map(i => i.name).join(', ');
+
+      const prompt = `Pantry items: ${items}.
+User favorites: ${favs.map(f => f.title).join(', ') || 'None yet'}.
+Generate 3 recipe recommendations. Include a "why" sentence explaining why they will love it based on flavors.
+Return strict JSON array:
+[
+  { "title": "...", "emoji": "🥗", "time": "20m", "why": "Because you like...", "ingredients": [], "instructions": [], "chefTip": "..." }
+]`;
+
+      try {
+        const data = await callGemini(prompt);
+        container.innerHTML = '';
+        data.forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-weight:700;">${s.emoji} ${s.title}</div>
+              <span style="font-size:0.75rem; color:#94a3b8;">${s.time}</span>
+            </div>
+            <div style="font-size:0.78rem; color:#fde68a; margin-top:4px;">✨ ${s.why}</div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        container.innerHTML = `<div style="color:#f87171; font-size:0.85rem;">Failed: ${err.message}</div>`;
+      }
+    }
+
+    // Favorites & IndexedDB
+    let db;
+    const request = indexedDB.open('PantryChefDB', 1);
+    request.onupgradeneeded = (e) => {
+      db = e.target.result;
+      if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos');
+    };
+    request.onsuccess = (e) => { db = e.target.result; };
+
+    function saveToFavorites(encodedRecipe, e) {
+      e.stopPropagation();
+      const recipe = JSON.parse(unescape(encodedRecipe));
+      let favs = JSON.parse(localStorage.getItem('pantry_favs') || '[]');
+      if (!favs.some(f => f.title === recipe.title)) {
+        favs.push({ ...recipe, id: Date.now() });
+        localStorage.setItem('pantry_favs', JSON.stringify(favs));
+        alert(`Saved ${recipe.title} to Favorites!`);
+      }
+    }
+
+    function renderFavorites() {
+      const list = document.getElementById('favorites-list');
+      if (!list) return;
+      list.innerHTML = '';
+      const favs = JSON.parse(localStorage.getItem('pantry_favs') || '[]');
+      if (!favs.length) {
+        list.innerHTML = `<div style="color:#94a3b8; font-size:0.85rem; text-align:center; padding:20px;">No saved favorites yet. Tap ❤️ on any recipe to save it here.</div>`;
+        return;
+      }
+      favs.forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'card';
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.gap = '12px';
+        item.innerHTML = `
+          <div style="font-size:1.8rem; width:44px; text-align:center;">${f.emoji || '🍽️'}</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; font-size:0.9rem;">${f.title}</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">${f.time} • Tap to view</div>
+          </div>
+          <button class="icon-btn" onclick="deleteFavorite(${f.id}, event)">🗑️</button>
+        `;
+        list.appendChild(item);
       });
-      
-      const activeBtn = document.getElementById(`nav-${tabId}`);
-      activeBtn.className = `nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 ${TABS[tabId].color} relative`;
-      activeBtn.querySelector('i').classList.add('drop-shadow-[0_0_8px_currentColor]');
-      activeBtn.querySelector('.nav-indicator').classList.remove('opacity-0');
-      activeBtn.querySelector('.nav-indicator').classList.add('opacity-100');
     }
 
-    function openSlideOver() {
-      document.getElementById('recipe-overlay').classList.remove('hidden');
-      // small delay to allow display:block to apply before transform transition
-      setTimeout(() => document.getElementById('recipe-modal').classList.add('open'), 10);
+    function deleteFavorite(id, e) {
+      e.stopPropagation();
+      let favs = JSON.parse(localStorage.getItem('pantry_favs') || '[]');
+      favs = favs.filter(f => f.id !== id);
+      localStorage.setItem('pantry_favs', JSON.stringify(favs));
+      renderFavorites();
     }
 
-    function closeSlideOver() {
-      document.getElementById('recipe-modal').classList.remove('open');
-      setTimeout(() => document.getElementById('recipe-overlay').classList.add('hidden'), 400);
-    }
-
-    function setupDailyTicker() {
-      const phrases = [
-        "What's on the menu today?",
-        "What are we cooking?",
-        "What's the vibe tonight?",
-        "Raid the fridge.",
-        "Let's make something great.",
-        "Chef mode: activated.",
-        "Fuel up."
-      ];
-      const dateStr = new Date().toISOString().slice(0, 10);
-      const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      document.getElementById('daily-ticker').innerText = phrases[hash % phrases.length];
-    }
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      initDailyTicker();
+      updateHomeMetrics();
+      const savedKey = localStorage.getItem('gemini_api_key');
+      if (savedKey) {
+        const input = document.getElementById('api-key-input');
+        if (input) input.value = savedKey;
+      }
+    });
   </script>
 </body>
 </html>
