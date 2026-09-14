@@ -1,23 +1,800 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Pantry Chef">
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>Pantry Chef</title>
-    <meta name="description" content="A futuristic iOS PWA for pantry inventory and AI recipe generation." />
-    <meta property="og:title" content="Pantry Chef" />
-    <meta property="og:description" content="A futuristic iOS PWA for pantry inventory and AI recipe generation." />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-  </head>
-  <body class="bg-[#0b0f17] text-white overflow-hidden">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pantry Chef">
+  <title>Pantry Chef</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
+  <style>
+    /* Global Resets & Safe Areas */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #0b0f17;
+      color: white;
+      overflow: hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .safe-pt { padding-top: env(safe-area-inset-top); }
+    .safe-pb { padding-bottom: calc(env(safe-area-inset-bottom) + 80px); }
+    .safe-nav-pb { padding-bottom: env(safe-area-inset-bottom); }
+
+    /* Scrollbar Hiding */
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Diner Neon Glow */
+    .neon-text {
+      text-shadow: 0 0 5px #fff, 0 0 10px #2563eb, 0 0 20px #2563eb, 0 0 40px #1d4ed8;
+    }
+    .animate-flicker {
+      animation: flicker 7s infinite;
+    }
+    @keyframes flicker {
+      0%, 93%, 95%, 97%, 99%, 100% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #2563eb, 0 0 20px #2563eb, 0 0 40px #1d4ed8; }
+      94% { opacity: 0.85; text-shadow: 0 0 2px #fff, 0 0 5px #2563eb, 0 0 10px #1d4ed8; }
+      96% { opacity: 0.7; text-shadow: 0 0 1px #fff, 0 0 3px #2563eb; }
+      98% { opacity: 0.9; text-shadow: 0 0 4px #fff, 0 0 8px #2563eb, 0 0 15px #1d4ed8; }
+    }
+
+    /* Daily Ticker Animation */
+    .animate-ticker {
+      animation: slideUpBlur 0.8s ease-out forwards;
+      animation-delay: 0.2s;
+      opacity: 0;
+    }
+    @keyframes slideUpBlur {
+      0% { transform: translateY(100%); filter: blur(4px); opacity: 0; box-shadow: 0 0 0px rgba(16,185,129,0); }
+      100% { transform: translateY(0); filter: blur(0px); opacity: 1; box-shadow: 0 0 15px rgba(16,185,129,0.5); }
+    }
+
+    /* Slide Over Modal */
+    .slide-over {
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .slide-over.open {
+      transform: translateY(0);
+    }
+    
+    /* Fade In */
+    .fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body class="h-[100dvh] w-full flex flex-col relative">
+
+  <!-- Ambient Emerald Glow Orbs -->
+  <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-600/20 blur-[80px] pointer-events-none z-0"></div>
+  <div class="absolute bottom-[10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-emerald-600/20 blur-[100px] pointer-events-none z-0"></div>
+
+  <!-- Main Content Wrapper -->
+  <div class="flex-1 overflow-y-auto safe-pt safe-pb px-4 relative z-10 w-full max-w-2xl mx-auto" id="main-content">
+    
+    <!-- HEADER -->
+    <header class="flex justify-between items-center overflow-hidden pt-4 pb-6">
+      <div class="flex items-center">
+        <h1 class="text-2xl font-bold tracking-tight text-white neon-text animate-flicker shrink-0">
+          Pantry Chef
+        </h1>
+        <div class="overflow-hidden relative ml-3 h-7 flex items-center">
+          <div id="daily-ticker" class="animate-ticker px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-2 shrink-0 ml-2">
+        <button id="btn-settings" class="p-2 rounded-full bg-white/5 border border-white/10 text-gray-300 hover:text-white transition-all active:scale-95">
+          <i data-lucide="settings" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ==================== TAB 1: HOME ==================== -->
+    <div id="tab-home" class="tab-content space-y-6">
+      
+      <!-- Master Inventory Quick-Link -->
+      <button onclick="switchTab('pantry')" class="w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(37,99,235,0.3)] active:scale-[0.98] active:translate-y-0 active:border-blue-500 active:shadow-[0_0_20px_rgba(37,99,235,0.5)] cursor-pointer">
+        <div class="text-left">
+          <p class="text-sm text-gray-400">Master Inventory</p>
+          <p class="text-xl font-semibold"><span id="inventory-count">0</span> Items Logged</p>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+          <i data-lucide="list" class="w-5 h-5"></i>
+        </div>
+      </button>
+
+      <!-- Action Grid -->
+      <div class="grid grid-cols-2 gap-4">
+        <button onclick="generateRecipes('quick-meal')" class="col-span-2 relative overflow-hidden flex items-center p-6 rounded-2xl bg-gradient-to-br from-[#1e293b] to-[#0f172a] border border-white/10 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-500/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-[0.98] active:translate-y-0 active:border-emerald-500 active:shadow-[0_0_20px_rgba(16,185,129,0.5)] cursor-pointer">
+          <div class="flex-1 text-left relative z-10">
+            <h3 class="text-lg font-bold text-white mb-1">Quick Meal</h3>
+            <p class="text-sm text-gray-400">Dictate what's in front of you</p>
+          </div>
+          <div class="w-14 h-14 rounded-full bg-emerald-600 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] animate-pulse relative z-10">
+            <i data-lucide="mic" class="w-6 h-6 text-white"></i>
+          </div>
+        </button>
+
+        <button onclick="generateRecipes('surprise-me')" class="col-span-2 flex items-center p-6 rounded-2xl bg-white/5 border border-white/10 transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-500/50 hover:shadow-[0_0_15px_rgba(245,158,11,0.3)] active:scale-[0.98] active:translate-y-0 active:border-amber-500 active:shadow-[0_0_20px_rgba(245,158,11,0.5)] cursor-pointer">
+          <div class="flex-1 text-left">
+            <h3 class="text-lg font-bold text-white mb-1">Surprise Me!</h3>
+            <p class="text-sm text-gray-400">Random meal from your pantry</p>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]">
+            <i data-lucide="zap" class="w-6 h-6"></i>
+          </div>
+        </button>
+      </div>
+
+      <!-- Smart Actions Bar -->
+      <div>
+        <h3 class="text-sm font-semibold text-gray-400 mb-3 px-1 uppercase tracking-wider">Smart Actions</h3>
+        <div class="flex gap-3 overflow-x-auto pb-4 snap-x hide-scrollbar">
+          
+          <button onclick="generateRecipes('use-it-up')" class="snap-start shrink-0 w-32 h-32 rounded-2xl bg-white/5 border border-rose-500/30 flex flex-col items-center justify-center p-4 relative overflow-hidden group transition-all duration-200 hover:scale-[1.02] hover:border-rose-400 hover:shadow-[0_0_15px_rgba(244,63,94,0.4)] active:scale-[0.96] active:border-rose-500 active:shadow-[0_0_20px_rgba(244,63,94,0.6)] cursor-pointer">
+            <div class="absolute inset-0 bg-rose-500/10"></div>
+            <i data-lucide="alert-circle" class="w-7 h-7 text-rose-400 mb-2 drop-shadow-[0_0_8px_rgba(244,63,94,0.5)] group-hover:scale-110 transition-transform duration-300"></i>
+            <span class="font-semibold text-sm">Use It Up</span>
+            <span class="text-xs text-gray-400 mt-1"><span id="expiring-count">0</span> Expiring</span>
+          </button>
+
+          <button onclick="generateRecipes('speed-mood')" class="snap-start shrink-0 w-32 h-32 rounded-2xl bg-white/5 border border-blue-500/30 flex flex-col items-center justify-center p-4 relative overflow-hidden group transition-all duration-200 hover:scale-[1.02] hover:border-blue-400 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] active:scale-[0.96] active:border-blue-500 active:shadow-[0_0_20px_rgba(59,130,246,0.6)] cursor-pointer">
+            <div class="absolute inset-0 bg-blue-500/10"></div>
+            <i data-lucide="clock" class="w-7 h-7 text-blue-400 mb-2 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] group-hover:scale-110 transition-transform duration-300"></i>
+            <span class="font-semibold text-sm">Under 15m</span>
+            <span class="text-xs text-gray-400 mt-1">Speed & Mood</span>
+          </button>
+
+          <button onclick="generateRecipes('chef-secret')" class="snap-start shrink-0 w-32 h-32 rounded-2xl bg-white/5 border border-amber-500/30 flex flex-col items-center justify-center p-4 relative overflow-hidden group transition-all duration-200 hover:scale-[1.02] hover:border-amber-400 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)] active:scale-[0.96] active:border-amber-500 active:shadow-[0_0_20px_rgba(245,158,11,0.6)] cursor-pointer">
+            <div class="absolute inset-0 bg-amber-500/10"></div>
+            <i data-lucide="flame" class="w-7 h-7 text-amber-400 mb-2 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] group-hover:scale-110 transition-transform duration-300"></i>
+            <span class="font-semibold text-sm text-center leading-tight">Chef's Secret</span>
+            <span class="text-xs text-gray-400 mt-1">Flavor Pairings</span>
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 2: PANTRY ==================== -->
+    <div id="tab-pantry" class="tab-content hidden flex-col h-full space-y-6">
+      <h2 class="text-2xl font-bold text-white">Master Inventory</h2>
+      <form id="pantry-form" class="relative flex items-center">
+        <div class="absolute left-4 text-gray-400">
+          <i data-lucide="search" class="w-5 h-5"></i>
+        </div>
+        <input type="text" id="pantry-input" placeholder="Add ingredients..." class="w-full bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500/50 transition-colors">
+        <button type="button" id="btn-mic" class="absolute right-2 p-2 rounded-full text-gray-400 hover:text-white transition-colors">
+          <i data-lucide="mic" class="w-5 h-5"></i>
+        </button>
+      </form>
+
+      <div id="pantry-list" class="flex-1 overflow-y-auto pb-20 space-y-6 hide-scrollbar">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div class="fixed bottom-24 left-0 right-0 flex justify-center pointer-events-none z-20">
+        <button id="btn-generate-pantry" onclick="generateRecipes('generate')" class="pointer-events-auto flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-600 text-white font-semibold shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-95 transition-transform hover:bg-emerald-500 hidden">
+          <i data-lucide="sparkles" class="w-5 h-5"></i> Generate Meals
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 3: SUGGESTIONS ==================== -->
+    <div id="tab-suggest" class="tab-content hidden flex-col h-full space-y-6">
+      <h2 class="text-2xl font-bold text-white mb-2">Taste Profile</h2>
+      <p id="suggest-subtitle" class="text-sm text-gray-400">Save some recipes to help us learn your taste profile!</p>
+
+      <div class="flex-1 flex flex-col items-center justify-center space-y-6 -mt-10">
+        <div class="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center relative">
+          <div class="absolute inset-0 rounded-full border border-amber-500/50 animate-ping opacity-20"></div>
+          <i data-lucide="sparkles" class="w-10 h-10 text-amber-400"></i>
+        </div>
+        
+        <div class="text-center max-w-xs">
+          <h3 id="suggest-title" class="text-lg font-bold text-white mb-2">Try popular chef-curated meals</h3>
+          <p class="text-sm text-gray-400 mb-6">We will analyze your pantry items to generate 3 custom recommendations.</p>
+          <button onclick="generateRecipes('suggestions')" class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-amber-500 text-amber-950 font-bold shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-95 transition-transform">
+            Generate Now <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 4: FAVORITES ==================== -->
+    <div id="tab-favorites" class="tab-content hidden space-y-4 pb-20">
+      <h2 class="text-2xl font-bold text-white mb-6">Saved Recipes</h2>
+      <div id="favorites-list" class="space-y-4">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+  </div> <!-- End Main Content -->
+
+  <!-- ==================== BOTTOM NAV ==================== -->
+  <nav class="absolute bottom-0 left-0 right-0 safe-nav-pb bg-[#121826]/80 backdrop-blur-xl border-t border-white/10 flex justify-around items-center px-2 py-3 z-40">
+    <button onclick="switchTab('home')" id="nav-home" class="nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 text-blue-500 relative">
+      <i data-lucide="home" class="w-6 h-6 drop-shadow-[0_0_8px_currentColor]"></i>
+      <span class="text-[10px] font-medium tracking-wide">Home</span>
+      <div class="nav-indicator absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-current transition-opacity"></div>
+    </button>
+    
+    <button onclick="switchTab('pantry')" id="nav-pantry" class="nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 text-gray-500 hover:text-gray-300 relative">
+      <i data-lucide="list" class="w-6 h-6"></i>
+      <span class="text-[10px] font-medium tracking-wide">Pantry</span>
+      <div class="nav-indicator absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-current opacity-0 transition-opacity"></div>
+    </button>
+    
+    <button onclick="switchTab('suggest')" id="nav-suggest" class="nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 text-gray-500 hover:text-gray-300 relative">
+      <i data-lucide="sparkles" class="w-6 h-6"></i>
+      <span class="text-[10px] font-medium tracking-wide">Suggest</span>
+      <div class="nav-indicator absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-current opacity-0 transition-opacity"></div>
+    </button>
+    
+    <button onclick="switchTab('favorites')" id="nav-favorites" class="nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 text-gray-500 hover:text-gray-300 relative">
+      <i data-lucide="heart" class="w-6 h-6"></i>
+      <span class="text-[10px] font-medium tracking-wide">Saved</span>
+      <div class="nav-indicator absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-current opacity-0 transition-opacity"></div>
+    </button>
+  </nav>
+
+  <!-- ==================== RECIPE SLIDE OVER ==================== -->
+  <div id="recipe-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden fade-in" onclick="closeSlideOver()"></div>
+  <div id="recipe-modal" class="slide-over fixed inset-x-0 bottom-0 top-16 bg-[#0f172a] rounded-t-3xl shadow-2xl z-50 flex flex-col overflow-hidden border-t border-white/10 max-w-2xl mx-auto">
+    <div class="flex justify-between items-center p-4 border-b border-white/10 shrink-0">
+      <h2 class="text-xl font-bold">Recipe Results</h2>
+      <button onclick="closeSlideOver()" class="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-gray-400 hover:text-white active:scale-95">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    
+    <div class="flex-1 overflow-y-auto px-4 py-6 space-y-6 hide-scrollbar relative">
+      <!-- Loading State -->
+      <div id="recipe-loading" class="flex flex-col items-center justify-center h-full space-y-4 text-emerald-400 hidden">
+        <i data-lucide="loader-2" class="w-10 h-10 animate-spin"></i>
+        <p class="text-sm font-medium animate-pulse">Chef AI is cooking...</p>
+      </div>
+      
+      <!-- Results Container -->
+      <div id="recipe-results" class="space-y-8 hidden fade-in">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SETTINGS MODAL ==================== -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 fade-in">
+    <div class="bg-[#121826] border border-white/10 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+      <div class="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="settings" class="w-4 h-4 text-emerald-400"></i>
+          <h3 class="font-bold text-white">App Settings</h3>
+        </div>
+        <button onclick="document.getElementById('settings-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition-colors active:scale-95">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <div class="p-5 space-y-4">
+        <div id="api-key-warning" class="bg-amber-500/10 border border-amber-500/20 text-amber-200 text-sm p-3 rounded-xl flex gap-3 hidden">
+          <i data-lucide="key" class="w-5 h-5 shrink-0 text-amber-400 mt-0.5"></i>
+          <p>An API key is required to use the AI features. Your key is stored securely in your device's local storage.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Google AI Studio API Key</label>
+          <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors placeholder-gray-600 font-mono text-sm">
+        </div>
+        <button onclick="saveApiKey()" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:bg-emerald-500 transition-colors active:scale-[0.98]">
+          Save Key
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    // --- STATE & INITIALIZATION ---
+    let pantryItems = JSON.parse(localStorage.getItem('pantryItems') || '[]');
+    let favorites = [];
+    let currentRecipes = [];
+    let db;
+    
+    // UI Constants
+    const CATEGORIES = [
+      { id: 'Proteins', label: '🥩 Proteins' },
+      { id: 'Produce', label: '🥦 Produce' },
+      { id: 'Dairy & Cold', label: '🧀 Dairy & Cold' },
+      { id: 'Pantry & Grains', label: '🥫 Pantry & Grains' },
+      { id: 'Spices, Oils & Sauces', label: '🧂 Spices, Oils & Sauces' },
+    ];
+    const TABS = {
+      'home': { color: 'text-blue-500' },
+      'pantry': { color: 'text-emerald-500' },
+      'suggest': { color: 'text-amber-500' },
+      'favorites': { color: 'text-rose-500' }
+    };
+
+    // Initialize App
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      initIndexedDB();
+      setupDailyTicker();
+      renderHomeStats();
+      renderPantry();
+      
+      // Settings Button
+      document.getElementById('btn-settings').addEventListener('click', () => {
+        document.getElementById('api-key-input').value = localStorage.getItem('gemini_api_key') || '';
+        document.getElementById('api-key-warning').classList.toggle('hidden', !!localStorage.getItem('gemini_api_key'));
+        document.getElementById('settings-modal').classList.remove('hidden');
+      });
+
+      // Pantry Input Form
+      document.getElementById('pantry-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('pantry-input');
+        const val = input.value.trim();
+        if (!val) return;
+        
+        const items = val.split(/,|\band\b/i).map(i => i.trim()).filter(Boolean);
+        items.forEach(item => {
+          let cat = 'Pantry & Grains';
+          const lower = item.toLowerCase();
+          if (lower.match(/chicken|beef|pork|fish|tofu|egg/)) cat = 'Proteins';
+          else if (lower.match(/apple|banana|carrot|onion|garlic|lettuce|tomato/)) cat = 'Produce';
+          else if (lower.match(/milk|cheese|yogurt|butter/)) cat = 'Dairy & Cold';
+          else if (lower.match(/salt|pepper|oil|sauce|sugar/)) cat = 'Spices, Oils & Sauces';
+          
+          pantryItems.push({ id: Date.now().toString() + Math.random(), name: item, category: cat, expiringSoon: false });
+        });
+        
+        savePantry();
+        input.value = '';
+      });
+
+      // Mic Button
+      const btnMic = document.getElementById('btn-mic');
+      btnMic.addEventListener('click', () => {
+        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Speech) return alert('Speech recognition is not supported in this browser.');
+        const rec = new Speech();
+        rec.onstart = () => {
+          btnMic.classList.add('bg-rose-500', 'text-white', 'animate-pulse');
+          btnMic.classList.remove('text-gray-400');
+        };
+        rec.onresult = (e) => {
+          const text = e.results[0][0].transcript;
+          const input = document.getElementById('pantry-input');
+          input.value += (input.value ? ', ' : '') + text;
+        };
+        rec.onend = () => {
+          btnMic.classList.remove('bg-rose-500', 'text-white', 'animate-pulse');
+          btnMic.classList.add('text-gray-400');
+        };
+        rec.start();
+      });
+    });
+
+    // --- INDEXED DB (FAVORITES) ---
+    function initIndexedDB() {
+      const request = indexedDB.open('pantry_chef_db', 1);
+      request.onupgradeneeded = (e) => {
+        db = e.target.result;
+        if (!db.objectStoreNames.contains('favorites')) {
+          db.createObjectStore('favorites', { keyPath: 'id' });
+        }
+      };
+      request.onsuccess = (e) => {
+        db = e.target.result;
+        loadFavorites();
+      };
+    }
+
+    function loadFavorites() {
+      const tx = db.transaction('favorites', 'readonly');
+      tx.objectStore('favorites').getAll().onsuccess = (e) => {
+        favorites = e.target.result;
+        renderSuggestionsState();
+        renderFavorites();
+      };
+    }
+
+    function addFavorite(recipeData) {
+      const recipe = { ...recipeData, servings: '1-2', photoBase64: null, notes: '' };
+      const tx = db.transaction('favorites', 'readwrite');
+      tx.objectStore('favorites').put(recipe).onsuccess = () => loadFavorites();
+    }
+
+    function updateFavorite(recipe) {
+      const tx = db.transaction('favorites', 'readwrite');
+      tx.objectStore('favorites').put(recipe).onsuccess = () => loadFavorites();
+    }
+
+    function deleteFavorite(id) {
+      if(!confirm('Delete this recipe?')) return;
+      const tx = db.transaction('favorites', 'readwrite');
+      tx.objectStore('favorites').delete(id).onsuccess = () => loadFavorites();
+    }
+
+    // --- LOGIC & RENDERING ---
+    function savePantry() {
+      localStorage.setItem('pantryItems', JSON.stringify(pantryItems));
+      renderPantry();
+      renderHomeStats();
+    }
+
+    function toggleExpiring(id) {
+      const item = pantryItems.find(i => i.id === id);
+      if (item) item.expiringSoon = !item.expiringSoon;
+      savePantry();
+    }
+
+    function deletePantryItem(id) {
+      pantryItems = pantryItems.filter(i => i.id !== id);
+      savePantry();
+    }
+
+    function renderHomeStats() {
+      document.getElementById('inventory-count').innerText = pantryItems.length;
+      document.getElementById('expiring-count').innerText = pantryItems.filter(i => i.expiringSoon).length;
+    }
+
+    function renderPantry() {
+      const list = document.getElementById('pantry-list');
+      const btnGenerate = document.getElementById('btn-generate-pantry');
+      
+      btnGenerate.classList.toggle('hidden', pantryItems.length === 0);
+      
+      if (pantryItems.length === 0) {
+        list.innerHTML = `
+          <div class="text-center text-gray-500 mt-10">
+            <p>Your pantry is empty.</p>
+            <p class="text-sm mt-2">Add some items above to get started.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      CATEGORIES.forEach(cat => {
+        const items = pantryItems.filter(i => i.category === cat.id);
+        if (items.length === 0) return;
+        
+        html += `
+          <div>
+            <h3 class="text-sm font-semibold text-gray-400 mb-3">${cat.label}</h3>
+            <div class="flex flex-wrap gap-2">
+              ${items.map(item => `
+                <div onclick="toggleExpiring('${item.id}')" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border cursor-pointer transition-all ${item.expiringSoon ? 'bg-rose-500/10 border-rose-500/50 text-rose-200 shadow-[0_0_10px_rgba(244,63,94,0.2)]' : 'bg-white/5 border-white/10 text-gray-200 hover:bg-white/10'}">
+                  ${item.name}
+                  <button onclick="event.stopPropagation(); deletePantryItem('${item.id}')" class="ml-1 p-0.5 rounded-full hover:bg-white/20 text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function renderSuggestionsState() {
+      const hasFavs = favorites.length > 0;
+      document.getElementById('suggest-subtitle').innerText = hasFavs 
+        ? 'Based on your saved dishes, we found these matches in your pantry.' 
+        : 'Save some recipes to help us learn your taste profile!';
+      document.getElementById('suggest-title').innerText = hasFavs 
+        ? 'Ready for tailored suggestions?' 
+        : 'Try popular chef-curated meals';
+    }
+
+    // --- FAVORITES RENDERING ---
+    function renderFavorites() {
+      const list = document.getElementById('favorites-list');
+      if (favorites.length === 0) {
+        list.innerHTML = `
+          <div class="pt-10 text-center text-gray-500">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center text-2xl">🍽️</div>
+            <p>No saved recipes yet.</p>
+            <p class="text-sm mt-2">Recipes you save will appear here offline.</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = favorites.map(recipe => `
+        <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition-all">
+          <div class="p-3 flex gap-4 items-center cursor-pointer active:bg-white/5" onclick="toggleFavoriteCard('${recipe.id}')">
+            <div class="w-20 h-20 shrink-0 rounded-xl bg-black/20 flex items-center justify-center overflow-hidden relative">
+              ${recipe.photoBase64 
+                ? `<img src="${recipe.photoBase64}" class="w-full h-full object-cover" />` 
+                : `<span class="text-3xl">${recipe.foodEmoji}</span>`
+              }
+            </div>
+            <div class="flex-1 min-w-0 py-1">
+              <h3 class="font-bold text-white truncate mb-1">${recipe.title}</h3>
+              <p class="text-xs text-gray-400 line-clamp-2 leading-snug">${recipe.description || ''}</p>
+              <div class="flex gap-3 mt-2 text-xs font-medium text-gray-500">
+                <span>⏱️ ${recipe.cookTime}</span>
+                <span>👥 ${recipe.servings}</span>
+              </div>
+            </div>
+            <div class="text-gray-500 pr-2">
+              <i data-lucide="chevron-down" class="w-5 h-5 chevron-icon transition-transform" id="chev-${recipe.id}"></i>
+            </div>
+          </div>
+          
+          <div id="expand-${recipe.id}" class="hidden border-t border-white/5 bg-black/20 px-4 py-4 space-y-4">
+            <div class="flex justify-between items-center">
+              <input type="file" accept="image/*" class="hidden" id="file-${recipe.id}" onchange="handlePhotoUpload(event, '${recipe.id}')">
+              <button onclick="document.getElementById('file-${recipe.id}').click()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 text-sm font-medium hover:bg-white/20 transition-colors">
+                <i data-lucide="camera" class="w-4 h-4"></i> ${recipe.photoBase64 ? 'Change Photo' : 'Add Photo'}
+              </button>
+              <button onclick="deleteFavorite('${recipe.id}')" class="p-1.5 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-300">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Personal Notes
+              </div>
+              <textarea onchange="updateNote('${recipe.id}', this.value)" placeholder="Add your tweaks..." class="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm text-gray-300 focus:outline-none focus:border-white/20 resize-none h-20 placeholder-gray-600">${recipe.notes || ''}</textarea>
+            </div>
+            <div>
+              <h4 class="text-sm font-semibold text-gray-300 mb-2">Ingredients</h4>
+              <ul class="text-sm text-gray-400 space-y-1">
+                ${recipe.ingredients.map(ing => `<li>• ${ing}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function toggleFavoriteCard(id) {
+      const content = document.getElementById(`expand-${id}`);
+      const chevron = document.getElementById(`chev-${id}`);
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        content.classList.add('fade-in');
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        content.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function updateNote(id, note) {
+      const rec = favorites.find(f => f.id === id);
+      if(rec) { rec.notes = note; updateFavorite(rec); }
+    }
+
+    // --- PHOTO RESIZE ENGINE ---
+    function handlePhotoUpload(e, id) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 800;
+          let w = img.width, h = img.height;
+          if (w > MAX) { h = Math.round((h * MAX) / w); w = MAX; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const base64 = canvas.toDataURL('image/jpeg', 0.8);
+          
+          const rec = favorites.find(f => f.id === id);
+          if (rec) { rec.photoBase64 = base64; updateFavorite(rec); }
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // --- SETTINGS / API KEY ---
+    function saveApiKey() {
+      const val = document.getElementById('api-key-input').value.trim();
+      localStorage.setItem('gemini_api_key', val);
+      document.getElementById('settings-modal').classList.add('hidden');
+    }
+
+    // --- GEMINI API CALL ---
+    async function generateRecipes(type) {
+      const apiKey = localStorage.getItem('gemini_api_key');
+      if (!apiKey) {
+        document.getElementById('api-key-warning').classList.remove('hidden');
+        document.getElementById('settings-modal').classList.remove('hidden');
+        return;
+      }
+
+      openSlideOver();
+      document.getElementById('recipe-loading').classList.remove('hidden');
+      document.getElementById('recipe-results').classList.add('hidden');
+      document.getElementById('recipe-results').innerHTML = '';
+
+      const itemsStr = pantryItems.map(i => i.name).join(', ');
+      const prompt = `You are a master chef. Create 5 distinct recipes based on the user's pantry.
+Pantry items: ${itemsStr || 'None. Suggest some basics.'}
+Request type: ${type}.
+Categorize the recipes into two tiers:
+- Tier 1: "Ready Right Now" (Uses 100% pantry match, no missing items).
+- Tier 2: "Missing 1 Minor Item" (Needs exactly 1 minor item not in pantry).
+Return a JSON array of 5 objects exactly matching this schema, without markdown formatting:
+[{"tier": "...", "title": "...", "foodEmoji": "...", "cookTime": "...", "difficulty": "...", "missingItem": "...", "suggestedSwap": "...", "ingredients": ["..."], "instructions": ["..."], "chefProTip": "...", "whyYoullLoveThis": "..."}]`;
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        });
+        const data = await res.json();
+        
+        if (data.error) throw new Error(data.error.message);
+        
+        let text = data.candidates[0].content.parts[0].text;
+        currentRecipes = JSON.parse(text).map(r => ({ ...r, id: Date.now().toString() + Math.random() }));
+        
+        document.getElementById('recipe-loading').classList.add('hidden');
+        renderRecipeResults();
+      } catch (e) {
+        console.error(e);
+        alert('Failed to generate recipes. Please check your API key.');
+        closeSlideOver();
+      }
+    }
+
+    function renderRecipeResults() {
+      const container = document.getElementById('recipe-results');
+      container.classList.remove('hidden');
+      
+      const t1 = currentRecipes.filter(r => r.tier.includes('Ready'));
+      const t2 = currentRecipes.filter(r => r.tier.includes('Missing'));
+      
+      let html = '';
+      if (t1.length > 0) {
+        html += `<section><h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 px-2">✨ Ready Right Now</h3><div class="space-y-4">${t1.map(r => buildRecipeCard(r)).join('')}</div></section>`;
+      }
+      if (t2.length > 0) {
+        html += `<section><h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 px-2 mt-8">🛒 Missing 1 Minor Item</h3><div class="space-y-4">${t2.map(r => buildRecipeCard(r)).join('')}</div></section>`;
+      }
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function buildRecipeCard(recipe) {
+      const isSaved = favorites.some(f => f.title === recipe.title); // rough check
+      return `
+        <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden cursor-pointer active:scale-[0.99] transition-transform" onclick="toggleGenCard('${recipe.id}')">
+          <div class="p-4 relative">
+            ${recipe.missingItem ? `
+              <div class="mb-3 flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl">
+                <i data-lucide="info" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+                <div class="text-xs text-amber-200"><span class="font-bold">Missing:</span> ${recipe.missingItem} <br/><span class="font-bold">Swap:</span> ${recipe.suggestedSwap}</div>
+              </div>
+            ` : ''}
+            <div class="flex gap-4">
+              <div class="text-4xl bg-white/10 w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">${recipe.foodEmoji}</div>
+              <div class="flex-1 min-w-0 pr-10">
+                <h4 class="font-bold text-white text-lg leading-tight mb-1">${recipe.title}</h4>
+                <div class="flex flex-wrap gap-2 text-xs font-medium">
+                  <span class="px-2 py-0.5 rounded-md bg-white/10 text-gray-300">⏱️ ${recipe.cookTime}</span>
+                  <span class="px-2 py-0.5 rounded-md bg-white/10 text-gray-300">⚡ ${recipe.difficulty}</span>
+                </div>
+              </div>
+            </div>
+            <button onclick="event.stopPropagation(); saveGeneratedRecipe('${recipe.id}', this)" class="absolute top-4 right-4 p-2.5 rounded-full bg-black/20 backdrop-blur-md">
+              <i data-lucide="heart" class="w-5 h-5 ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}"></i>
+            </button>
+          </div>
+          
+          <div id="gen-expand-${recipe.id}" class="hidden border-t border-white/5 bg-black/20 p-4 space-y-5 fade-in">
+            ${recipe.whyYoullLoveThis ? `<div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3"><h5 class="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-1">Why You'll Love This</h5><p class="text-sm text-emerald-100">${recipe.whyYoullLoveThis}</p></div>` : ''}
+            <div>
+              <h5 class="text-sm font-bold text-gray-300 mb-2">Ingredients</h5>
+              <ul class="space-y-1.5">${recipe.ingredients.map(ing => `<li class="flex gap-2 text-sm text-gray-400"><div class="w-1.5 h-1.5 rounded-full bg-blue-500/50 mt-1.5 shrink-0"></div>${ing}</li>`).join('')}</ul>
+            </div>
+            <div>
+              <h5 class="text-sm font-bold text-gray-300 mb-2">Instructions</h5>
+              <div class="space-y-3">${recipe.instructions.map((step, i) => `<div class="flex gap-3 text-sm"><div class="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-xs font-bold text-gray-400 shrink-0 mt-0.5">${i + 1}</div><p class="text-gray-300 leading-relaxed">${step}</p></div>`).join('')}</div>
+            </div>
+            ${recipe.chefProTip ? `<div class="flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent border-l-2 border-amber-500"><div class="text-lg">👨‍🍳</div><div><h5 class="text-xs font-bold text-amber-500 uppercase">Chef's Pro Tip</h5><p class="text-sm text-amber-200/80 mt-0.5">${recipe.chefProTip}</p></div></div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleGenCard(id) {
+      const el = document.getElementById(`gen-expand-${id}`);
+      el.classList.toggle('hidden');
+    }
+
+    function saveGeneratedRecipe(id, btnEl) {
+      const recipe = currentRecipes.find(r => r.id === id);
+      if (recipe) {
+        addFavorite(recipe);
+        const icon = btnEl.querySelector('i');
+        icon.classList.remove('text-gray-400');
+        icon.classList.add('fill-rose-500', 'text-rose-500');
+      }
+    }
+
+    // --- UI HELPERS ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      document.getElementById(`tab-${tabId}`).classList.add('flex'); // For flex layouts
+      
+      // Update Nav
+      document.querySelectorAll('.nav-btn').forEach(el => {
+        el.className = 'nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 text-gray-500 hover:text-gray-300 relative';
+        el.querySelector('i').classList.remove('drop-shadow-[0_0_8px_currentColor]');
+        el.querySelector('.nav-indicator').classList.remove('opacity-100');
+        el.querySelector('.nav-indicator').classList.add('opacity-0');
+      });
+      
+      const activeBtn = document.getElementById(`nav-${tabId}`);
+      activeBtn.className = `nav-btn flex flex-col items-center justify-center w-16 gap-1 transition-all duration-200 active:scale-90 ${TABS[tabId].color} relative`;
+      activeBtn.querySelector('i').classList.add('drop-shadow-[0_0_8px_currentColor]');
+      activeBtn.querySelector('.nav-indicator').classList.remove('opacity-0');
+      activeBtn.querySelector('.nav-indicator').classList.add('opacity-100');
+    }
+
+    function openSlideOver() {
+      document.getElementById('recipe-overlay').classList.remove('hidden');
+      // small delay to allow display:block to apply before transform transition
+      setTimeout(() => document.getElementById('recipe-modal').classList.add('open'), 10);
+    }
+
+    function closeSlideOver() {
+      document.getElementById('recipe-modal').classList.remove('open');
+      setTimeout(() => document.getElementById('recipe-overlay').classList.add('hidden'), 400);
+    }
+
+    function setupDailyTicker() {
+      const phrases = [
+        "What's on the menu today?",
+        "What are we cooking?",
+        "What's the vibe tonight?",
+        "Raid the fridge.",
+        "Let's make something great.",
+        "Chef mode: activated.",
+        "Fuel up."
+      ];
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      document.getElementById('daily-ticker').innerText = phrases[hash % phrases.length];
+    }
+  </script>
+</body>
+</html>
