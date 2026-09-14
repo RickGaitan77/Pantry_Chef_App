@@ -485,12 +485,14 @@
       color: #022c22;
     }
 
-    /* Toast Notification */
+    /* Auto-Dismissing Toast Notification */
     .toast {
       position: fixed;
-      bottom: calc(65px + env(safe-area-inset-bottom));
+      bottom: calc(75px + env(safe-area-inset-bottom));
       left: 50%;
-      transform: translateX(-50%) translateY(100px);
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      visibility: hidden;
       background: rgba(16, 185, 129, 0.95);
       color: #022c22;
       padding: 10px 18px;
@@ -498,12 +500,19 @@
       font-size: 0.82rem;
       font-weight: 700;
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
       z-index: 300;
       pointer-events: none;
+      max-width: 85%;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .toast.show {
       transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      visibility: visible;
     }
   </style>
 </head>
@@ -700,12 +709,19 @@
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
 
+    // Auto-dismissing toast manager
+    let toastTimer = null;
     function showToast(msg) {
       const toast = document.getElementById('toast');
       if (!toast) return;
+      if (toastTimer) clearTimeout(toastTimer);
+
       toast.textContent = msg;
       toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
+
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
     }
 
     // State
@@ -714,7 +730,7 @@
     let lastPromptText = '';
     let lastPromptTitle = '';
     let currentServings = 2;
-    const MODEL_NAME = 'gemini-3.5-flash-lite';
+    const MODEL_NAME = 'gemini-3.8-flash';
 
     // Daily Ticker Logic
     const sayings = [
@@ -894,8 +910,8 @@
       });
     }
 
-    // Direct Gemini Fetch using x-goog-api-key header & structured JSON config
-    async function callGemini(promptText) {
+    // Direct Gemini Fetch with Auto-Retry and x-goog-api-key header
+    async function callGemini(promptText, maxRetries = 3) {
       const apiKey = (localStorage.getItem('gemini_api_key') || '').trim();
       if (!apiKey) {
         openModal('settings-modal');
@@ -912,23 +928,37 @@
         }
       };
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey
-        },
-        body: JSON.stringify(payload)
-      });
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey
+            },
+            body: JSON.stringify(payload)
+          });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error?.message || `HTTP ${res.status}`);
+          // If Google says busy (503) or rate-limited (429), back off silently and retry
+          if ((res.status === 503 || res.status === 429) && attempt < maxRetries - 1) {
+            await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+            continue;
+          }
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error?.message || `HTTP ${res.status}`);
+          }
+
+          const data = await res.json();
+          const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          return JSON.parse(rawText);
+
+        } catch (err) {
+          if (attempt === maxRetries - 1) throw err;
+          await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+        }
       }
-
-      const data = await res.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      return JSON.parse(rawText);
     }
 
     function setPortion(num) {
