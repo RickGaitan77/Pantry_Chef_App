@@ -286,35 +286,63 @@
       box-shadow: 0 0 10px var(--cobalt-glow);
     }
 
-    /* Timer Elements */
+    /* Clean Stovetop Timer Elements */
+    .timer-center-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 6px 0;
+    }
     .timer-display {
-      font-size: 2.3rem;
+      font-size: 2.7rem;
       font-weight: 800;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
       text-align: center;
       color: #38bdf8;
-      text-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
-      margin: 4px 0;
+      text-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+      min-width: 140px;
     }
-    .timer-presets {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-    }
-    .btn-preset {
-      background: rgba(255, 255, 255, 0.05);
+    .stepper-btn {
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border-dim);
-      color: #cbd5e1;
-      padding: 6px 2px;
-      border-radius: 8px;
-      font-size: 0.68rem;
-      font-weight: 600;
-      text-align: center;
+      color: #e2e8f0;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .stepper-btn:active {
+      transform: scale(0.92);
+      border-color: #38bdf8;
+      color: #fff;
+    }
+    .quick-step-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .btn-step-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-dim);
+      color: #94a3b8;
+      padding: 5px 12px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
       cursor: pointer;
     }
-    .btn-preset:active {
-      background: var(--cobalt);
-      color: #fff;
+    .btn-step-pill:active {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-color: #38bdf8;
     }
     .timer-controls {
       display: flex;
@@ -323,12 +351,16 @@
     }
     .btn-timer-action {
       flex: 1;
-      padding: 8px;
+      padding: 10px;
       border: none;
-      border-radius: 10px;
-      font-size: 0.78rem;
+      border-radius: 12px;
+      font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-timer-action:active {
+      transform: scale(0.97);
     }
 
     /* Slot Machine Reels */
@@ -661,7 +693,7 @@
         <!-- Dynamic Multi-Widget Space -->
         <div class="card widget-hub-card">
           <div class="widget-header-row">
-            <div style="font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; color: #94a3b8;" id="widget-card-title">KITCHEN ASSISTANT</div>
+            <div style="font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; color: #94a3b8;" id="widget-card-title">STOVETOP TIMER</div>
             <div class="sub-tabs-pill">
               <button class="sub-tab-btn active" id="btn-sub-timer" onclick="switchSubWidget('timer')">⏱️ Timer</button>
               <button class="sub-tab-btn" id="btn-sub-special" onclick="switchSubWidget('special')">✨ Special</button>
@@ -669,17 +701,24 @@
             </div>
           </div>
 
-          <!-- SUB-VIEW 1: TIMER -->
+          <!-- SUB-VIEW 1: CLEAN SELECTOR TIMER -->
           <div id="subview-timer" style="display: flex; flex-direction: column; gap: 8px;">
-            <div class="timer-display" id="timer-readout">00:00</div>
-            <div class="timer-presets">
-              <button class="btn-preset" onclick="setTimerPreset(360, 'Soft Egg')">Soft Egg 6m</button>
-              <button class="btn-preset" onclick="setTimerPreset(540, 'Pasta')">Pasta 9m</button>
-              <button class="btn-preset" onclick="setTimerPreset(300, 'Steak Rest')">Rest 5m</button>
-              <button class="btn-preset" onclick="setTimerPreset(180, 'Quick Sear')">Sear 3m</button>
+            <div class="timer-center-box">
+              <button class="stepper-btn" onclick="adjustTimer(-60)" aria-label="Minus 1 Minute">−</button>
+              <div class="timer-display" id="timer-readout">05:00</div>
+              <button class="stepper-btn" onclick="adjustTimer(60)" aria-label="Plus 1 Minute">+</button>
             </div>
+            
+            <div class="quick-step-row">
+              <button class="btn-step-pill" onclick="setTimerDirect(60)">1m</button>
+              <button class="btn-step-pill" onclick="setTimerDirect(180)">3m</button>
+              <button class="btn-step-pill" onclick="setTimerDirect(300)">5m</button>
+              <button class="btn-step-pill" onclick="setTimerDirect(600)">10m</button>
+              <button class="btn-step-pill" onclick="setTimerDirect(900)">15m</button>
+            </div>
+
             <div class="timer-controls">
-              <button class="btn-timer-action" id="btn-timer-start" style="background: var(--cobalt); color: #fff;" onclick="toggleTimer()">Start</button>
+              <button class="btn-timer-action" id="btn-timer-start" style="background: var(--cobalt); color: #fff;" onclick="toggleTimer()">Start Timer</button>
               <button class="btn-timer-action" style="background: rgba(255,255,255,0.08); color: #94a3b8;" onclick="resetTimer()">Reset</button>
             </div>
           </div>
@@ -900,7 +939,7 @@
     function categorize(name) {
       const lower = name.toLowerCase().trim();
 
-      // 1. Check SPICES First (Catch powders, seasonings, dried herbs before produce checks)
+      // 1. Check SPICES First (Catch powders, seasonings, dried herbs before produce)
       const spiceTriggers = ['powder', 'seasoning', 'seed', 'dried', 'oregano', 'cumin', 'paprika', 'chili', 'black pepper', 'salt', 'garlic powder', 'onion powder', 'soy sauce', 'vinegar', 'honey', 'oil', 'olive oil'];
       if (spiceTriggers.some(k => lower.includes(k))) return 'Spices';
 
@@ -1439,9 +1478,63 @@
       if (widgetId === 'dice') titleEl.textContent = 'PANTRY ROULETTE';
     }
 
-    // 1. Timer Logic
-    let timerDuration = 0;
-    let timerRemaining = 0;
+    /* ==========================================================================
+       WEB AUDIO SYNTHESIZED KITCHEN CHIME (100% Offline Sound)
+       ========================================================================== */
+    let audioCtx = null;
+    function initAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playKitchenChime() {
+      try {
+        initAudioContext();
+        if (!audioCtx) return;
+
+        const now = audioCtx.currentTime;
+        
+        // Two-tone bell melody (Chime 1: 587Hz / D5, Chime 2: 880Hz / A5)
+        const playTone = (freq, start, duration) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, start);
+
+          gain.gain.setValueAtTime(0.001, start);
+          gain.gain.exponentialRampToValueAtTime(0.35, start + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc.start(start);
+          osc.stop(start + duration);
+        };
+
+        // Double ping pattern
+        playTone(587.33, now, 0.4);
+        playTone(880.00, now + 0.18, 0.8);
+        playTone(587.33, now + 0.9, 0.4);
+        playTone(880.00, now + 1.08, 1.0);
+
+        if ('vibrate' in navigator) {
+          navigator.vibrate([200, 100, 200, 100, 400]);
+        }
+      } catch (err) {
+        console.warn('Audio playback error:', err);
+      }
+    }
+
+    // Timer Stepper & Countdown Logic
+    let timerDuration = 300;
+    let timerRemaining = 300;
     let timerInterval = null;
 
     function formatTime(s) {
@@ -1450,18 +1543,28 @@
       return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
 
-    function setTimerPreset(seconds, label) {
-      clearInterval(timerInterval);
-      timerInterval = null;
+    function adjustTimer(deltaSeconds) {
+      if (timerInterval) return; // Prevent adjusting mid-countdown
+      timerDuration = Math.max(60, Math.min(3600, timerDuration + deltaSeconds));
+      timerRemaining = timerDuration;
+      document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
+    }
+
+    function setTimerDirect(seconds) {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
       timerDuration = seconds;
       timerRemaining = seconds;
       document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
-      document.getElementById('btn-timer-start').textContent = 'Start';
-      document.getElementById('btn-timer-start').style.background = 'var(--cobalt)';
+      const startBtn = document.getElementById('btn-timer-start');
+      startBtn.textContent = 'Start Timer';
+      startBtn.style.background = 'var(--cobalt)';
     }
 
     function toggleTimer() {
-      if (!timerRemaining) setTimerPreset(300, 'Rest 5m');
+      initAudioContext(); // Pre-warm audio on user touch gesture
       const startBtn = document.getElementById('btn-timer-start');
 
       if (timerInterval) {
@@ -1475,24 +1578,31 @@
         timerInterval = setInterval(() => {
           timerRemaining--;
           document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
+          
           if (timerRemaining <= 0) {
             clearInterval(timerInterval);
             timerInterval = null;
-            startBtn.textContent = 'Done!';
-            startBtn.style.background = 'var(--emerald)';
-            showToast('⏰ Kitchen timer complete!');
+            startBtn.textContent = 'Start Timer';
+            startBtn.style.background = 'var(--cobalt)';
+            timerRemaining = timerDuration;
+            document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
+            
+            playKitchenChime();
+            showToast('🔔 Timer finished!');
           }
         }, 1000);
       }
     }
 
     function resetTimer() {
-      clearInterval(timerInterval);
-      timerInterval = null;
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
       timerRemaining = timerDuration;
       document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
       const startBtn = document.getElementById('btn-timer-start');
-      startBtn.textContent = 'Start';
+      startBtn.textContent = 'Start Timer';
       startBtn.style.background = 'var(--cobalt)';
     }
 
@@ -1670,7 +1780,6 @@
       initDailyTicker();
       updateHomeMetrics();
       refreshSpecialPreview();
-      setTimerPreset(300, 'Rest 5m');
       renderDynamicSuggestions();
     });
   </script>
