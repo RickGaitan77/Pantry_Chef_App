@@ -22,6 +22,8 @@
       --amber-glow: rgba(245, 158, 11, 0.45);
       --ruby: #e11d48;
       --ruby-glow: rgba(225, 29, 72, 0.45);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.45);
     }
 
     * {
@@ -204,38 +206,7 @@
       box-shadow: 0 0 18px var(--cobalt-glow);
     }
 
-    .action-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .action-card {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 120px;
-      cursor: pointer;
-    }
-    .quick-meal-card {
-      border-color: rgba(37, 99, 235, 0.3);
-    }
-    .quick-meal-card:active {
-      border-color: var(--cobalt);
-      box-shadow: 0 0 16px var(--cobalt-glow);
-    }
-    .surprise-card {
-      border-color: rgba(245, 158, 11, 0.3);
-    }
-    .surprise-card:active {
-      border-color: var(--amber);
-      box-shadow: 0 0 16px var(--amber-glow);
-    }
-
-    .amber-bolt {
-      color: #f59e0b;
-      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.75));
-    }
-
+    /* 3-Square Grid Rows */
     .squares-bar {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -243,40 +214,159 @@
     }
     .square-card {
       aspect-ratio: 1 / 1;
-      padding: 10px 8px;
+      padding: 10px 6px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
       cursor: pointer;
-      gap: 5px;
+      gap: 4px;
     }
-    .sq-useit {
-      border-color: rgba(225, 29, 72, 0.35);
-    }
-    .sq-useit:active {
-      border-color: var(--ruby);
-      box-shadow: 0 0 14px var(--ruby-glow);
-      transform: scale(0.96);
-    }
-    .sq-speed {
-      border-color: rgba(37, 99, 235, 0.35);
-    }
-    .sq-speed:active {
-      border-color: var(--cobalt);
-      box-shadow: 0 0 14px var(--cobalt-glow);
-      transform: scale(0.96);
-    }
-    .sq-chef {
-      border-color: rgba(245, 158, 11, 0.35);
-    }
-    .sq-chef:active {
-      border-color: var(--amber);
-      box-shadow: 0 0 14px var(--amber-glow);
-      transform: scale(0.96);
+    .sq-quick { border-color: rgba(37, 99, 235, 0.35); }
+    .sq-quick:active { border-color: var(--cobalt); box-shadow: 0 0 14px var(--cobalt-glow); transform: scale(0.96); }
+    
+    .sq-surprise { border-color: rgba(245, 158, 11, 0.35); }
+    .sq-surprise:active { border-color: var(--amber); box-shadow: 0 0 14px var(--amber-glow); transform: scale(0.96); }
+    
+    .sq-unlock { border-color: rgba(6, 182, 212, 0.35); }
+    .sq-unlock:active { border-color: var(--cyan); box-shadow: 0 0 14px var(--cyan-glow); transform: scale(0.96); }
+
+    .sq-useit { border-color: rgba(225, 29, 72, 0.35); }
+    .sq-useit:active { border-color: var(--ruby); box-shadow: 0 0 14px var(--ruby-glow); transform: scale(0.96); }
+
+    .sq-speed { border-color: rgba(37, 99, 235, 0.35); }
+    .sq-speed:active { border-color: var(--cobalt); box-shadow: 0 0 14px var(--cobalt-glow); transform: scale(0.96); }
+
+    .sq-chef { border-color: rgba(245, 158, 11, 0.35); }
+    .sq-chef:active { border-color: var(--amber); box-shadow: 0 0 14px var(--amber-glow); transform: scale(0.96); }
+
+    .amber-bolt {
+      color: #f59e0b;
+      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.75));
     }
 
+    /* Multi-Widget Container Card */
+    .widget-hub-card {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(180deg, rgba(22, 29, 46, 0.85) 0%, rgba(13, 17, 28, 0.95) 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 220px;
+      position: relative;
+    }
+    .widget-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sub-tabs-pill {
+      display: flex;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+      padding: 2px;
+      gap: 2px;
+      border: 1px solid var(--border-dim);
+    }
+    .sub-tab-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .sub-tab-btn.active {
+      background: var(--cobalt);
+      color: #fff;
+      box-shadow: 0 0 10px var(--cobalt-glow);
+    }
+
+    /* Timer Elements */
+    .timer-display {
+      font-size: 2.3rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-align: center;
+      color: #38bdf8;
+      text-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+      margin: 4px 0;
+    }
+    .timer-presets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .btn-preset {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-dim);
+      color: #cbd5e1;
+      padding: 6px 2px;
+      border-radius: 8px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+    }
+    .btn-preset:active {
+      background: var(--cobalt);
+      color: #fff;
+    }
+    .timer-controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .btn-timer-action {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Slot Machine Reels */
+    .slot-frame {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .slot-reel {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-dim);
+      border-radius: 10px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fde68a;
+      padding: 0 4px;
+      overflow: hidden;
+      transition: transform 0.15s ease;
+    }
+    .slot-reel.spinning {
+      animation: reelBlur 0.15s infinite alternate;
+      color: #38bdf8;
+    }
+    @keyframes reelBlur {
+      0% { transform: translateY(-4px); filter: blur(1px); }
+      100% { transform: translateY(4px); filter: blur(1px); }
+    }
+
+    /* Pantry View Rows */
     .pantry-input-row {
       display: flex;
       gap: 8px;
@@ -521,6 +611,7 @@
     <main>
       <!-- TAB 1: HOME -->
       <section id="tab-home" class="tab-content active">
+        <!-- Master Inventory Banner -->
         <div class="card inventory-banner" onclick="switchTab('pantry')">
           <div>
             <div style="font-size: 0.8rem; color: #93c5fd; font-weight: 600;">MASTER INVENTORY</div>
@@ -529,39 +620,88 @@
           <div style="font-size: 1.3rem; color: #60a5fa;">→</div>
         </div>
 
-        <div class="action-grid">
-          <div class="card action-card quick-meal-card" onclick="startQuickMeal()">
-            <div style="font-size: 1.6rem;" id="quick-meal-icon">🎙️</div>
-            <div>
-              <div style="font-weight: 700; font-size: 0.95rem;">Quick Meal</div>
-              <div style="font-size: 0.75rem; color: #94a3b8;">Speak or type</div>
-            </div>
+        <!-- 3-Square Row 1: Primary Triggers -->
+        <div class="squares-bar">
+          <div class="card square-card sq-quick" onclick="startQuickMeal()">
+            <span style="font-size: 1.4rem;" id="quick-meal-icon">🎙️</span>
+            <span style="font-size: 0.72rem; font-weight: 700;">Quick Meal</span>
+            <span style="font-size: 0.62rem; color: #93c5fd;">Speak/Type</span>
           </div>
-          <div class="card action-card surprise-card" onclick="triggerSurpriseMe()">
-            <div class="amber-bolt" style="font-size: 1.6rem;">⚡</div>
-            <div>
-              <div style="font-weight: 700; font-size: 0.95rem;">Surprise Me!</div>
-              <div style="font-size: 0.75rem; color: #94a3b8;">Chef choice meal</div>
-            </div>
+          <div class="card square-card sq-surprise" onclick="triggerSurpriseMe()">
+            <span class="amber-bolt" style="font-size: 1.4rem;">⚡</span>
+            <span style="font-size: 0.72rem; font-weight: 700;">Surprise Me</span>
+            <span style="font-size: 0.62rem; color: #fde68a;">Chef Picks</span>
+          </div>
+          <div class="card square-card sq-unlock" onclick="triggerUnlockTeaser()">
+            <span style="font-size: 1.4rem;">🛒</span>
+            <span style="font-size: 0.72rem; font-weight: 700;">Missing 1</span>
+            <span style="font-size: 0.62rem; color: #67e8f9;">Unlock Meals</span>
           </div>
         </div>
 
-        <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; margin-top: 6px; letter-spacing: 0.05em;">SMART KITCHEN ACTIONS</div>
+        <!-- 3-Square Row 2: Secondary Triggers -->
         <div class="squares-bar">
           <div class="card square-card sq-useit" onclick="openOverlay('overlay-useit')">
-            <span style="font-size: 1.3rem;">⚠️</span>
-            <span style="font-size: 0.75rem; font-weight: 700;">Use It Up</span>
-            <span style="font-size: 0.65rem; color: #fda4af;" id="sq-expiring-count">0 tagged</span>
+            <span style="font-size: 1.4rem;">⚠️</span>
+            <span style="font-size: 0.72rem; font-weight: 700;">Use It Up</span>
+            <span style="font-size: 0.62rem; color: #fda4af;" id="sq-expiring-count">0 tagged</span>
           </div>
           <div class="card square-card sq-speed" onclick="openOverlay('overlay-speed')">
-            <span style="font-size: 1.3rem;">⏱️</span>
-            <span style="font-size: 0.75rem; font-weight: 700;">Speed/Mood</span>
-            <span style="font-size: 0.65rem; color: #93c5fd;">Fast filters</span>
+            <span style="font-size: 1.4rem;">⏱️</span>
+            <span style="font-size: 0.72rem; font-weight: 700;">Speed/Mood</span>
+            <span style="font-size: 0.62rem; color: #93c5fd;">Fast Filters</span>
           </div>
           <div class="card square-card sq-chef" onclick="triggerChefSecret()">
-            <span style="font-size: 1.3rem;">✨</span>
-            <span style="font-size: 0.75rem; font-weight: 700;">Chef Secret</span>
-            <span style="font-size: 0.65rem; color: #fde68a;">Flavor trick</span>
+            <span style="font-size: 1.4rem;">✨</span>
+            <span style="font-size: 0.72rem; font-weight: 700;">Chef Secret</span>
+            <span style="font-size: 0.62rem; color: #fde68a;">Flavor Trick</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Multi-Widget Space -->
+        <div class="card widget-hub-card">
+          <div class="widget-header-row">
+            <div style="font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; color: #94a3b8;" id="widget-card-title">KITCHEN ASSISTANT</div>
+            <div class="sub-tabs-pill">
+              <button class="sub-tab-btn active" id="btn-sub-timer" onclick="switchSubWidget('timer')">⏱️ Timer</button>
+              <button class="sub-tab-btn" id="btn-sub-special" onclick="switchSubWidget('special')">✨ Special</button>
+              <button class="sub-tab-btn" id="btn-sub-dice" onclick="switchSubWidget('dice')">🎰 Roll Dice</button>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 1: TIMER -->
+          <div id="subview-timer" style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="timer-display" id="timer-readout">00:00</div>
+            <div class="timer-presets">
+              <button class="btn-preset" onclick="setTimerPreset(360, 'Soft Egg')">Soft Egg 6m</button>
+              <button class="btn-preset" onclick="setTimerPreset(540, 'Pasta')">Pasta 9m</button>
+              <button class="btn-preset" onclick="setTimerPreset(300, 'Steak Rest')">Rest 5m</button>
+              <button class="btn-preset" onclick="setTimerPreset(180, 'Quick Sear')">Sear 3m</button>
+            </div>
+            <div class="timer-controls">
+              <button class="btn-timer-action" id="btn-timer-start" style="background: var(--cobalt); color: #fff;" onclick="toggleTimer()">Start</button>
+              <button class="btn-timer-action" style="background: rgba(255,255,255,0.08); color: #94a3b8;" onclick="resetTimer()">Reset</button>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 2: TONIGHT'S CHEF SPECIAL -->
+          <div id="subview-special" style="display: none; flex-direction: column; justify-content: space-between; gap: 10px;">
+            <div id="special-content">
+              <div style="font-weight: 700; font-size: 0.95rem; color: #fde68a;" id="special-title">Analyzing your pantry...</div>
+              <div style="font-size: 0.78rem; color: #cbd5e1; margin-top: 4px;" id="special-desc">Add a few items to your pantry to unlock tonight's featured dish.</div>
+            </div>
+            <button class="btn-primary" id="btn-open-special" style="padding: 10px; font-size: 0.8rem;" onclick="openSpecialRecipe()">Inspect Recipe</button>
+          </div>
+
+          <!-- SUB-VIEW 3: ROLL THE DICE (SLOT MACHINE) -->
+          <div id="subview-dice" style="display: none; flex-direction: column; gap: 10px;">
+            <div class="slot-frame">
+              <div class="slot-reel" id="reel-1">Protein</div>
+              <div class="slot-reel" id="reel-2">Produce</div>
+              <div class="slot-reel" id="reel-3">Technique</div>
+            </div>
+            <div style="font-size: 0.75rem; color: #38bdf8; text-align: center; min-height: 18px;" id="dice-outcome">Tap to spin your pantry combo!</div>
+            <button class="btn-primary" style="background: var(--amber); color: #451a03; padding: 10px; font-size: 0.8rem;" onclick="spinSlotReels()">🎰 Spin Reels</button>
           </div>
         </div>
       </section>
@@ -569,7 +709,7 @@
       <!-- TAB 2: PANTRY -->
       <section id="tab-pantry" class="tab-content">
         <div class="pantry-input-row">
-          <input type="text" id="pantry-input" class="pantry-input" placeholder="Type ingredients (e.g. bacon, eggs, spinach)..." onblur="resetViewportScroll()">
+          <input type="text" id="pantry-input" class="pantry-input" placeholder="Type items (e.g. ham, hamburger, garlic powder)..." onblur="resetViewportScroll()">
           <button class="btn-add-item" onclick="handleAddPantryItem()">Add</button>
         </div>
 
@@ -584,7 +724,7 @@
       <section id="tab-suggestions" class="tab-content">
         <div style="font-size: 0.85rem; color: #fde68a; font-weight: 600; margin-bottom: 4px;">CURATED TASTE ENGINE</div>
         <div id="suggestions-container" style="display: flex; flex-direction: column; gap: 10px;">
-          <!-- Dynamically matched taste ideas -->
+          <!-- Suggestions -->
         </div>
         <button class="btn-primary" onclick="fetchSuggestions()" style="background: var(--amber); color: #451a03; margin-top: 10px;">Shuffle Pairings</button>
       </section>
@@ -593,7 +733,7 @@
       <section id="tab-favorites" class="tab-content">
         <div style="font-size: 0.85rem; color: #f43f5e; font-weight: 600; margin-bottom: 4px;">SAVED COOKBOOK</div>
         <div id="favorites-list" style="display: flex; flex-direction: column; gap: 10px;">
-          <!-- Saved items -->
+          <!-- Saved Favorites -->
         </div>
       </section>
     </main>
@@ -664,8 +804,8 @@
       <button class="icon-btn" onclick="closeOverlay('settings-modal')">✕</button>
     </div>
     <div style="display:flex; flex-direction:column; gap:14px; font-size:0.85rem; line-height:1.6; color:#94a3b8;">
-      <p><strong style="color:#fff;">100% Offline Culinary Engine:</strong> Operates entirely in your browser through combinatorial ingredient synthesis. No external APIs, network latency, or service caps.</p>
-      <p><strong style="color:#fff;">Local & Private:</strong> All inventory and favorites are saved locally on your device.</p>
+      <p><strong style="color:#fff;">100% Offline Culinary Engine:</strong> Synthesizes recipes dynamically in your browser without external APIs or internet connection.</p>
+      <p><strong style="color:#fff;">Private & Persistent:</strong> All ingredients, favorites, and settings remain on your device.</p>
     </div>
   </div>
 
@@ -732,7 +872,10 @@
       const activeBtn = document.getElementById(`nav-${tabId}`);
       if (activeBtn) activeBtn.classList.add('active');
 
-      if (tabId === 'home') updateHomeMetrics();
+      if (tabId === 'home') {
+        updateHomeMetrics();
+        refreshSpecialPreview();
+      }
       if (tabId === 'pantry') renderPantry();
       if (tabId === 'favorites') renderFavorites();
       if (tabId === 'suggestions') renderDynamicSuggestions();
@@ -751,20 +894,41 @@
     }
     function openModal(id) { openOverlay(id); }
 
-    const CATEGORIES = {
-      Proteins: ['chicken', 'beef', 'steak', 'pork', 'turkey', 'egg', 'eggs', 'tofu', 'salmon', 'tuna', 'shrimp', 'bacon', 'beans', 'sausage', 'ground beef', 'ham'],
-      Produce: ['spinach', 'onion', 'onions', 'garlic', 'tomato', 'tomatoes', 'potato', 'potatoes', 'broccoli', 'lemon', 'lime', 'avocado', 'peppers', 'pepper', 'bell pepper', 'carrot', 'carrots', 'herbs', 'mushroom', 'mushrooms', 'zucchini', 'kale', 'corn', 'cilantro', 'asparagus', 'cabbage'],
-      Dairy: ['milk', 'cheddar', 'cheese', 'butter', 'yogurt', 'parmesan', 'cream', 'mozzarella', 'feta', 'sour cream'],
-      Grains: ['rice', 'pasta', 'bread', 'flour', 'oats', 'quinoa', 'noodles', 'tortilla', 'tortillas', 'spaghetti', 'penne', 'macaroni'],
-      Spices: ['oil', 'olive oil', 'salt', 'black pepper', 'soy sauce', 'vinegar', 'honey', 'oregano', 'cumin', 'paprika', 'chili', 'garlic powder']
-    };
-
+    /* ==========================================================================
+       BULLETPROOF CATEGORIZATION
+       ========================================================================== */
     function categorize(name) {
-      const lower = name.toLowerCase();
-      for (const [cat, keywords] of Object.entries(CATEGORIES)) {
-        if (keywords.some(k => lower.includes(k))) return cat;
-      }
-      return 'Produce';
+      const lower = name.toLowerCase().trim();
+
+      // 1. Check SPICES First (Catch powders, seasonings, dried herbs before produce checks)
+      const spiceTriggers = ['powder', 'seasoning', 'seed', 'dried', 'oregano', 'cumin', 'paprika', 'chili', 'black pepper', 'salt', 'garlic powder', 'onion powder', 'soy sauce', 'vinegar', 'honey', 'oil', 'olive oil'];
+      if (spiceTriggers.some(k => lower.includes(k))) return 'Spices';
+
+      // 2. Check PROTEINS (Catch ham, hamburger, ground meats, cold cuts)
+      const proteinTriggers = [
+        'ham', 'hamburger', 'burger', 'ground beef', 'ground chuck', 'ground turkey', 'patty',
+        'chicken', 'beef', 'steak', 'pork', 'turkey', 'egg', 'eggs', 'tofu', 'salmon',
+        'tuna', 'shrimp', 'bacon', 'beans', 'sausage', 'prosciutto', 'salami'
+      ];
+      if (proteinTriggers.some(k => lower.includes(k))) return 'Proteins';
+
+      // 3. Check DAIRY
+      const dairyTriggers = ['milk', 'cheddar', 'cheese', 'butter', 'yogurt', 'parmesan', 'cream', 'mozzarella', 'feta', 'sour cream'];
+      if (dairyTriggers.some(k => lower.includes(k))) return 'Dairy';
+
+      // 4. Check GRAINS
+      const grainTriggers = ['rice', 'pasta', 'bread', 'flour', 'oats', 'quinoa', 'noodle', 'noodles', 'tortilla', 'tortillas', 'spaghetti', 'penne', 'macaroni'];
+      if (grainTriggers.some(k => lower.includes(k))) return 'Grains';
+
+      // 5. Check PRODUCE
+      const produceTriggers = [
+        'spinach', 'onion', 'garlic', 'tomato', 'potato', 'broccoli', 'lemon', 'lime',
+        'avocado', 'pepper', 'bell pepper', 'carrot', 'mushroom', 'zucchini', 'kale', 'corn', 'cilantro', 'asparagus', 'cabbage'
+      ];
+      if (produceTriggers.some(k => lower.includes(k))) return 'Produce';
+
+      // 6. Neutral Fallback
+      return 'Pantry Staples';
     }
 
     function handleAddPantryItem() {
@@ -788,6 +952,7 @@
       resetViewportScroll();
       renderPantry();
       updateHomeMetrics();
+      refreshSpecialPreview();
     }
 
     function toggleExpiring(id) {
@@ -803,6 +968,7 @@
       localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
       renderPantry();
       updateHomeMetrics();
+      refreshSpecialPreview();
     }
 
     function renderPantry() {
@@ -881,7 +1047,6 @@
       const hasCheese = activeItems.some(i => i.name.toLowerCase().includes('cheese') || i.name.toLowerCase().includes('cheddar') || i.name.toLowerCase().includes('parmesan'));
       const sMultiplier = currentServings === 2 ? 1 : 2;
 
-      // Fallback lists if categories are sparse
       const effectiveProteins = proteins.length ? proteins : ['tofu', 'egg', 'beans'];
       const effectiveProduce = produce.length ? produce : ['garlic', 'onion', 'spinach'];
       const effectiveGrains = grains.length ? grains : ['rice', 'pasta', 'tortilla'];
@@ -896,11 +1061,10 @@
         }
       }
 
-      // Loop through ingredient combinations across 10 Culinary Archetypes
       effectiveProteins.forEach(prot => {
         effectiveProduce.forEach(veg => {
 
-          // 1. Skillet Frittata / Scramble
+          // Frittata / Scramble
           if (hasEggs || prot.toLowerCase().includes('egg') || !proteins.length) {
             pushRecipe({
               title: `Rustic ${capitalize(prot)} & ${capitalize(veg)} Frittata`,
@@ -924,7 +1088,7 @@
             });
           }
 
-          // 2. Caramelized Skillet Hash
+          // Skillet Hash
           pushRecipe({
             title: `Crisp ${capitalize(prot)} & ${capitalize(veg)} Skillet Hash`,
             emoji: '🥔',
@@ -945,7 +1109,7 @@
             chefTip: 'Do not stir constantly; letting the ingredients sit undisturbed on hot cast iron creates maximum Maillard browning.'
           });
 
-          // 3. Sheet Pan Roast
+          // Sheet Pan Roast
           pushRecipe({
             title: `Caramelized Sheet Pan ${capitalize(prot)} with ${capitalize(veg)}`,
             emoji: '🥦',
@@ -966,7 +1130,7 @@
             chefTip: 'Crowding the pan creates trapped steam; spreading ingredients out ensures they roast to a crisp caramel rather than getting soggy.'
           });
 
-          // 4. Aromatic Stir-Fry
+          // Flash Stir-Fry
           pushRecipe({
             title: `Sizzling ${capitalize(prot)} & ${capitalize(veg)} Flash Stir-Fry`,
             emoji: '🥢',
@@ -987,28 +1151,7 @@
             chefTip: 'Cook in rapid high-heat bursts to preserve the natural sugars and snap of fresh produce.'
           });
 
-          // 5. Simmered Herb Pot / Soup
-          pushRecipe({
-            title: `Warm Simmered ${capitalize(prot)} & ${capitalize(veg)} Broth`,
-            emoji: '🍲',
-            time: '20 mins',
-            tier: '100% Match',
-            missing: 'None',
-            ingredients: [
-              `${6 * sMultiplier} oz ${prot}`,
-              `1 cup sliced ${veg}`,
-              `${2 * sMultiplier} cups water or broth`,
-              'Salt, pepper, and dried herbs to taste'
-            ],
-            instructions: [
-              `Lightly brown ${prot} in a saucepan with a drop of oil for 3 minutes.`,
-              `Add ${veg} and pour in ${2 * sMultiplier} cups of liquid, bringing it to a rolling boil.`,
-              `Lower heat and simmer for 15 minutes to extract natural flavors into a comforting, savory reduction.`
-            ],
-            chefTip: 'A splash of vinegar or citrus off the heat cuts through broth heaviness and balances savory notes.'
-          });
-
-          // 6. Grains, Pastas & Melts
+          // Grains, Pastas & Melts
           effectiveGrains.forEach(grn => {
             const isRice = grn.toLowerCase().includes('rice');
             const isPasta = grn.toLowerCase().includes('pasta') || grn.toLowerCase().includes('noodle') || grn.toLowerCase().includes('spaghetti');
@@ -1080,44 +1223,18 @@
             }
           });
 
-          // 7. Cream / Dairy Glazed Skillet
-          if (dairy.length || hasCheese) {
-            const dName = dairy[0] || 'butter';
-            pushRecipe({
-              title: `Velvety ${capitalize(dName)}-Braised ${capitalize(prot)} & ${capitalize(veg)}`,
-              emoji: '🧈',
-              time: '16 mins',
-              tier: '100% Match',
-              missing: 'None',
-              ingredients: [
-                `${6 * sMultiplier} oz ${prot}`,
-                `1 cup chopped ${veg}`,
-                `3 tbsp ${dName}`,
-                'Black pepper and fresh garlic salt'
-              ],
-              instructions: [
-                `Sear ${prot} until golden in a warm pan, then stir in ${veg}.`,
-                `Drop heat to low and melt in ${dName}, swirling gently to create a rich glaze.`,
-                `Simmer for 3 minutes until vegetables are glossy and coated, then season to taste.`
-              ],
-              chefTip: 'Adding cold dairy to a warm pan off the heat creates a rich pan emulsion that never breaks or separates.'
-            });
-          }
-
         });
       });
 
-      // Filter handling
       let filtered = generated;
       if (filterType === 'Under 15 Minutes') {
         filtered = generated.filter(r => parseInt(r.time) <= 15);
       } else if (filterType === 'High Protein') {
         filtered = generated.filter(r => proteins.some(p => r.title.toLowerCase().includes(p.toLowerCase())));
       } else if (filterType === 'One-Pan Meal') {
-        filtered = generated.filter(r => r.title.includes('Skillet') || r.title.includes('Sheet Pan') || r.title.includes('Broth'));
+        filtered = generated.filter(r => r.title.includes('Skillet') || r.title.includes('Sheet Pan') || r.title.includes('Frittata'));
       }
 
-      // Return discovered variations capped cleanly at 75
       return filtered.slice(0, 75);
     }
 
@@ -1215,7 +1332,7 @@
     }
 
     function fallbackTextPrompt() {
-      const spoken = prompt('Enter ingredients on hand (e.g. bacon, eggs, cheddar):');
+      const spoken = prompt('Enter ingredients on hand (e.g. ham, cheddar, eggs):');
       if (spoken) addItemsAndRun(spoken);
     }
 
@@ -1232,7 +1349,46 @@
       });
       localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
       updateHomeMetrics();
+      refreshSpecialPreview();
       generateFromMasterPantry();
+    }
+
+    function triggerUnlockTeaser() {
+      if (!pantryItems.length) return showToast('Add items to pantry first!');
+      const proteins = pantryItems.filter(i => i.category === 'Proteins');
+      const dairy = pantryItems.filter(i => i.category === 'Dairy');
+      const grains = pantryItems.filter(i => i.category === 'Grains');
+
+      let target = 'heavy cream';
+      let unlockCount = 8;
+      let unlockType = 'rich pan sauces and velvety skillet bakes';
+
+      if (!grains.length) {
+        target = 'corn tortillas or sourdough bread';
+        unlockCount = 12;
+        unlockType = 'crisp panini melts and skillet quesadillas';
+      } else if (!dairy.length) {
+        target = 'sharp cheddar or parmesan';
+        unlockCount = 10;
+        unlockType = 'savory casseroles, frittata bakes, and melted glazes';
+      } else if (!proteins.length) {
+        target = 'bacon or chicken';
+        unlockCount = 15;
+        unlockType = 'high-protein sheet roasts and savory skillet bowls';
+      }
+
+      openOverlay('overlay-results');
+      document.getElementById('results-title').textContent = "Smart Unlock Teaser";
+      const container = document.getElementById('results-container');
+      container.innerHTML = `
+        <div class="recipe-card expanded">
+          <div style="font-weight:800; font-size:1.05rem; color:#67e8f9;">🛒 Single-Item Unlock Accelerator</div>
+          <div class="recipe-details" style="display:block;">
+            <p style="margin-bottom:10px; color:#fde68a;">Grab <strong>${esc(target)}</strong> on your next grocery run.</p>
+            <p style="color:#cbd5e1; font-size:0.85rem; line-height:1.6;">Based on your active inventory, adding this single staple will instantly unlock <strong>${unlockCount}+ new recipes</strong> including ${esc(unlockType)}.</p>
+          </div>
+        </div>
+      `;
     }
 
     function generateRescueMeal() {
@@ -1265,6 +1421,153 @@
       `;
     }
 
+    /* ==========================================================================
+       SUB-WIDGET HUB: TIMER, SPECIAL, AND ROLL THE DICE
+       ========================================================================== */
+    function switchSubWidget(widgetId) {
+      document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`btn-sub-${widgetId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      document.getElementById('subview-timer').style.display = widgetId === 'timer' ? 'flex' : 'none';
+      document.getElementById('subview-special').style.display = widgetId === 'special' ? 'flex' : 'none';
+      document.getElementById('subview-dice').style.display = widgetId === 'dice' ? 'flex' : 'none';
+
+      const titleEl = document.getElementById('widget-card-title');
+      if (widgetId === 'timer') titleEl.textContent = 'STOVETOP TIMER';
+      if (widgetId === 'special') titleEl.textContent = "TONIGHT'S SPECIAL";
+      if (widgetId === 'dice') titleEl.textContent = 'PANTRY ROULETTE';
+    }
+
+    // 1. Timer Logic
+    let timerDuration = 0;
+    let timerRemaining = 0;
+    let timerInterval = null;
+
+    function formatTime(s) {
+      const mins = Math.floor(s / 60);
+      const secs = s % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function setTimerPreset(seconds, label) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerDuration = seconds;
+      timerRemaining = seconds;
+      document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
+      document.getElementById('btn-timer-start').textContent = 'Start';
+      document.getElementById('btn-timer-start').style.background = 'var(--cobalt)';
+    }
+
+    function toggleTimer() {
+      if (!timerRemaining) setTimerPreset(300, 'Rest 5m');
+      const startBtn = document.getElementById('btn-timer-start');
+
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        startBtn.textContent = 'Resume';
+        startBtn.style.background = 'var(--emerald)';
+      } else {
+        startBtn.textContent = 'Pause';
+        startBtn.style.background = 'var(--ruby)';
+        timerInterval = setInterval(() => {
+          timerRemaining--;
+          document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
+          if (timerRemaining <= 0) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            startBtn.textContent = 'Done!';
+            startBtn.style.background = 'var(--emerald)';
+            showToast('⏰ Kitchen timer complete!');
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerRemaining = timerDuration;
+      document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
+      const startBtn = document.getElementById('btn-timer-start');
+      startBtn.textContent = 'Start';
+      startBtn.style.background = 'var(--cobalt)';
+    }
+
+    // 2. Tonight's Chef Special Preview
+    let currentSpecialRecipe = null;
+    function refreshSpecialPreview() {
+      const titleEl = document.getElementById('special-title');
+      const descEl = document.getElementById('special-desc');
+      const btn = document.getElementById('btn-open-special');
+
+      if (!pantryItems.length) {
+        titleEl.textContent = 'Log ingredients to unlock';
+        descEl.textContent = 'Add items in your Pantry tab to trigger your personal Chef Special.';
+        btn.style.display = 'none';
+        return;
+      }
+
+      const recipes = synthesizeRecipes();
+      if (recipes.length) {
+        currentSpecialRecipe = recipes[0];
+        titleEl.textContent = `${currentSpecialRecipe.emoji} ${currentSpecialRecipe.title}`;
+        descEl.textContent = `${currentSpecialRecipe.time} • Ready to cook from your active stock.`;
+        btn.style.display = 'block';
+      }
+    }
+
+    function openSpecialRecipe() {
+      if (!currentSpecialRecipe) return;
+      showResults("Tonight's Chef Special", [currentSpecialRecipe]);
+    }
+
+    // 3. Roll the Dice / Slot Machine Spin
+    let isSpinning = false;
+    function spinSlotReels() {
+      if (isSpinning) return;
+      if (!pantryItems.length) return showToast('Add pantry ingredients first to spin!');
+
+      isSpinning = true;
+      const r1 = document.getElementById('reel-1');
+      const r2 = document.getElementById('reel-2');
+      const r3 = document.getElementById('reel-3');
+      const outcome = document.getElementById('dice-outcome');
+
+      r1.classList.add('spinning');
+      r2.classList.add('spinning');
+      r3.classList.add('spinning');
+      outcome.textContent = 'Spinning the kitchen wheels...';
+
+      const pList = pantryItems.filter(i => i.category === 'Proteins').map(i => i.name);
+      const vList = pantryItems.filter(i => i.category === 'Produce').map(i => i.name);
+      const techniques = ['Cast-Iron Sear', 'Golden Hash', 'Butter Glaze', 'Crispy Bowl', 'Oven Roast', 'Flash Sauté'];
+
+      const chosenProt = pList.length ? pList[Math.floor(Math.random() * pList.length)] : (pantryItems[0]?.name || 'Protein');
+      const chosenVeg = vList.length ? vList[Math.floor(Math.random() * vList.length)] : (pantryItems[1]?.name || 'Veggies');
+      const chosenTech = techniques[Math.floor(Math.random() * techniques.length)];
+
+      setTimeout(() => {
+        r1.classList.remove('spinning');
+        r1.textContent = capitalize(chosenProt);
+      }, 400);
+
+      setTimeout(() => {
+        r2.classList.remove('spinning');
+        r2.textContent = capitalize(chosenVeg);
+      }, 700);
+
+      setTimeout(() => {
+        r3.classList.remove('spinning');
+        r3.textContent = chosenTech;
+        outcome.textContent = `🎯 Cook: ${chosenTech} with ${capitalize(chosenProt)} & ${capitalize(chosenVeg)}!`;
+        isSpinning = false;
+      }, 1000);
+    }
+
+    // Ideas Tab
     function renderDynamicSuggestions() {
       const container = document.getElementById('suggestions-container');
       if (!container) return;
@@ -1366,6 +1669,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       initDailyTicker();
       updateHomeMetrics();
+      refreshSpecialPreview();
+      setTimerPreset(300, 'Rest 5m');
       renderDynamicSuggestions();
     });
   </script>
