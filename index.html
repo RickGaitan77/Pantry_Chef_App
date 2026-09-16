@@ -34,8 +34,9 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    input, textarea, button {
-      font-size: 16px !important;
+    /* Fixed: button removed from 16px override to restore typography scale */
+    input, textarea, select {
+      font-size: 16px;
     }
 
     html, body {
@@ -206,7 +207,7 @@
       box-shadow: 0 0 18px var(--cobalt-glow);
     }
 
-    /* 3-Square Grid Rows */
+    /* Consolidated Square-Cards */
     .squares-bar {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -222,24 +223,22 @@
       text-align: center;
       cursor: pointer;
       gap: 4px;
+      --accent: var(--cobalt);
+      --accent-glow: var(--cobalt-glow);
+      border-color: rgba(255, 255, 255, 0.08);
+      transition: all 0.15s ease;
     }
-    .sq-quick { border-color: rgba(37, 99, 235, 0.35); }
-    .sq-quick:active { border-color: var(--cobalt); box-shadow: 0 0 14px var(--cobalt-glow); transform: scale(0.96); }
-    
-    .sq-surprise { border-color: rgba(245, 158, 11, 0.35); }
-    .sq-surprise:active { border-color: var(--amber); box-shadow: 0 0 14px var(--amber-glow); transform: scale(0.96); }
-    
-    .sq-unlock { border-color: rgba(6, 182, 212, 0.35); }
-    .sq-unlock:active { border-color: var(--cyan); box-shadow: 0 0 14px var(--cyan-glow); transform: scale(0.96); }
-
-    .sq-useit { border-color: rgba(225, 29, 72, 0.35); }
-    .sq-useit:active { border-color: var(--ruby); box-shadow: 0 0 14px var(--ruby-glow); transform: scale(0.96); }
-
-    .sq-speed { border-color: rgba(37, 99, 235, 0.35); }
-    .sq-speed:active { border-color: var(--cobalt); box-shadow: 0 0 14px var(--cobalt-glow); transform: scale(0.96); }
-
-    .sq-chef { border-color: rgba(245, 158, 11, 0.35); }
-    .sq-chef:active { border-color: var(--amber); box-shadow: 0 0 14px var(--amber-glow); transform: scale(0.96); }
+    .square-card:active {
+      border-color: var(--accent);
+      box-shadow: 0 0 14px var(--accent-glow);
+      transform: scale(0.96);
+    }
+    .sq-quick   { --accent: var(--cobalt); --accent-glow: var(--cobalt-glow); border-color: rgba(37, 99, 235, 0.35); }
+    .sq-surprise{ --accent: var(--amber);  --accent-glow: var(--amber-glow);  border-color: rgba(245, 158, 11, 0.35); }
+    .sq-unlock  { --accent: var(--cyan);   --accent-glow: var(--cyan-glow);   border-color: rgba(6, 182, 212, 0.35); }
+    .sq-useit   { --accent: var(--ruby);   --accent-glow: var(--ruby-glow);   border-color: rgba(225, 29, 72, 0.35); }
+    .sq-speed   { --accent: var(--cobalt); --accent-glow: var(--cobalt-glow); border-color: rgba(37, 99, 235, 0.35); }
+    .sq-chef    { --accent: var(--amber);  --accent-glow: var(--amber-glow);  border-color: rgba(245, 158, 11, 0.35); }
 
     .amber-bolt {
       color: #f59e0b;
@@ -273,7 +272,7 @@
       background: none;
       border: none;
       color: #94a3b8;
-      padding: 4px 10px;
+      padding: 6px 10px;
       border-radius: 999px;
       font-size: 0.68rem;
       font-weight: 700;
@@ -286,7 +285,7 @@
       box-shadow: 0 0 10px var(--cobalt-glow);
     }
 
-    /* Clean Stovetop Timer Elements */
+    /* Stovetop Timer Elements */
     .timer-center-box {
       display: flex;
       align-items: center;
@@ -307,10 +306,10 @@
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border-dim);
       color: #e2e8f0;
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -333,7 +332,7 @@
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border-dim);
       color: #94a3b8;
-      padding: 5px 12px;
+      padding: 6px 12px;
       border-radius: 12px;
       font-size: 0.72rem;
       font-weight: 700;
@@ -351,7 +350,7 @@
     }
     .btn-timer-action {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       border: none;
       border-radius: 12px;
       font-size: 0.82rem;
@@ -525,11 +524,20 @@
     .overlay.active {
       display: flex;
     }
+    
+    /* Fixed: Sticky overlay header keeps close button visible while scrolling */
     .overlay-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(11, 15, 23, 0.96);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
     }
     .btn-primary {
       background: var(--emerald);
@@ -627,7 +635,7 @@
     <div class="orb-2"></div>
   </div>
 
-  <div id="toast" class="toast">Saved to Favorites</div>
+  <div id="toast" class="toast" role="status" aria-live="polite">Saved to Favorites</div>
 
   <div id="app-container">
     <header>
@@ -637,14 +645,14 @@
           <span class="ticker-text" id="daily-ticker">Chef mode: activated.</span>
         </div>
       </div>
-      <button class="icon-btn" onclick="openModal('settings-modal')" aria-label="About">ℹ️</button>
+      <button class="icon-btn" onclick="openModal('settings-modal')" aria-label="About Pantry Chef">ℹ️</button>
     </header>
 
     <main>
       <!-- TAB 1: HOME -->
       <section id="tab-home" class="tab-content active">
         <!-- Master Inventory Banner -->
-        <div class="card inventory-banner" onclick="switchTab('pantry')">
+        <div class="card inventory-banner" onclick="switchTab('pantry')" role="button" tabindex="0">
           <div>
             <div style="font-size: 0.8rem; color: #93c5fd; font-weight: 600;">MASTER INVENTORY</div>
             <div style="font-size: 1.15rem; font-weight: 700; margin-top: 2px;" id="home-pantry-count">0 Items Logged</div>
@@ -654,17 +662,17 @@
 
         <!-- 3-Square Row 1: Primary Triggers -->
         <div class="squares-bar">
-          <div class="card square-card sq-quick" onclick="startQuickMeal()">
+          <div class="card square-card sq-quick" onclick="startQuickMeal()" role="button" tabindex="0">
             <span style="font-size: 1.4rem;" id="quick-meal-icon">🎙️</span>
             <span style="font-size: 0.72rem; font-weight: 700;">Quick Meal</span>
             <span style="font-size: 0.62rem; color: #93c5fd;">Speak/Type</span>
           </div>
-          <div class="card square-card sq-surprise" onclick="triggerSurpriseMe()">
+          <div class="card square-card sq-surprise" onclick="triggerSurpriseMe()" role="button" tabindex="0">
             <span class="amber-bolt" style="font-size: 1.4rem;">⚡</span>
             <span style="font-size: 0.72rem; font-weight: 700;">Surprise Me</span>
             <span style="font-size: 0.62rem; color: #fde68a;">Chef Picks</span>
           </div>
-          <div class="card square-card sq-unlock" onclick="triggerUnlockTeaser()">
+          <div class="card square-card sq-unlock" onclick="triggerUnlockTeaser()" role="button" tabindex="0">
             <span style="font-size: 1.4rem;">🛒</span>
             <span style="font-size: 0.72rem; font-weight: 700;">Missing 1</span>
             <span style="font-size: 0.62rem; color: #67e8f9;">Unlock Meals</span>
@@ -673,17 +681,17 @@
 
         <!-- 3-Square Row 2: Secondary Triggers -->
         <div class="squares-bar">
-          <div class="card square-card sq-useit" onclick="openOverlay('overlay-useit')">
+          <div class="card square-card sq-useit" onclick="openOverlay('overlay-useit')" role="button" tabindex="0">
             <span style="font-size: 1.4rem;">⚠️</span>
             <span style="font-size: 0.72rem; font-weight: 700;">Use It Up</span>
             <span style="font-size: 0.62rem; color: #fda4af;" id="sq-expiring-count">0 tagged</span>
           </div>
-          <div class="card square-card sq-speed" onclick="openOverlay('overlay-speed')">
+          <div class="card square-card sq-speed" onclick="openOverlay('overlay-speed')" role="button" tabindex="0">
             <span style="font-size: 1.4rem;">⏱️</span>
             <span style="font-size: 0.72rem; font-weight: 700;">Speed/Mood</span>
             <span style="font-size: 0.62rem; color: #93c5fd;">Fast Filters</span>
           </div>
-          <div class="card square-card sq-chef" onclick="triggerChefSecret()">
+          <div class="card square-card sq-chef" onclick="triggerChefSecret()" role="button" tabindex="0">
             <span style="font-size: 1.4rem;">✨</span>
             <span style="font-size: 0.72rem; font-weight: 700;">Chef Secret</span>
             <span style="font-size: 0.62rem; color: #fde68a;">Flavor Trick</span>
@@ -727,7 +735,7 @@
           <div id="subview-special" style="display: none; flex-direction: column; justify-content: space-between; gap: 10px;">
             <div id="special-content">
               <div style="font-weight: 700; font-size: 0.95rem; color: #fde68a;" id="special-title">Analyzing your pantry...</div>
-              <div style="font-size: 0.78rem; color: #cbd5e1; margin-top: 4px;" id="special-desc">Add a few items to your pantry to unlock tonight's featured dish.</div>
+              <div style="font-size: 0.78rem; color: #cbd5e1; margin-top: 4px;" id="special-desc">Add items in your Pantry tab to trigger your personal Chef Special.</div>
             </div>
             <button class="btn-primary" id="btn-open-special" style="padding: 10px; font-size: 0.8rem;" onclick="openSpecialRecipe()">Inspect Recipe</button>
           </div>
@@ -739,7 +747,7 @@
               <div class="slot-reel" id="reel-2">Produce</div>
               <div class="slot-reel" id="reel-3">Technique</div>
             </div>
-            <div style="font-size: 0.75rem; color: #38bdf8; text-align: center; min-height: 18px;" id="dice-outcome">Tap to spin your pantry combo!</div>
+            <div style="font-size: 0.75rem; color: #38bdf8; text-align: center; min-height: 18px;" id="dice-outcome" aria-live="polite">Tap to spin your pantry combo!</div>
             <button class="btn-primary" style="background: var(--amber); color: #451a03; padding: 10px; font-size: 0.8rem;" onclick="spinSlotReels()">🎰 Spin Reels</button>
           </div>
         </div>
@@ -798,10 +806,10 @@
   </div>
 
   <!-- OVERLAY: RESULTS VIEW -->
-  <div id="overlay-results" class="overlay">
+  <div id="overlay-results" class="overlay" role="dialog" aria-modal="true">
     <div class="overlay-header">
       <h2 style="font-size: 1.15rem; font-weight: 800; color: #6ee7b7;" id="results-title">Recipe Results</h2>
-      <button class="icon-btn" onclick="closeOverlay('overlay-results')">✕</button>
+      <button class="icon-btn" onclick="closeOverlay('overlay-results')" aria-label="Close recipes">✕</button>
     </div>
     
     <div class="portion-toggle">
@@ -813,20 +821,20 @@
   </div>
 
   <!-- OVERLAY: USE IT UP -->
-  <div id="overlay-useit" class="overlay">
+  <div id="overlay-useit" class="overlay" role="dialog" aria-modal="true">
     <div class="overlay-header">
       <h2 style="font-size: 1.15rem; font-weight: 800; color: #fda4af;">Use It Up (Expiring)</h2>
-      <button class="icon-btn" onclick="closeOverlay('overlay-useit')">✕</button>
+      <button class="icon-btn" onclick="closeOverlay('overlay-useit')" aria-label="Close overlay">✕</button>
     </div>
     <div id="useit-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
     <button class="btn-primary" style="background:var(--ruby); color:#fff;" onclick="generateRescueMeal()">Generate Rescue Meal</button>
   </div>
 
   <!-- OVERLAY: SPEED/MOOD -->
-  <div id="overlay-speed" class="overlay">
+  <div id="overlay-speed" class="overlay" role="dialog" aria-modal="true">
     <div class="overlay-header">
       <h2 style="font-size: 1.15rem; font-weight: 800; color: #93c5fd;">Speed & Mood</h2>
-      <button class="icon-btn" onclick="closeOverlay('overlay-speed')">✕</button>
+      <button class="icon-btn" onclick="closeOverlay('overlay-speed')" aria-label="Close overlay">✕</button>
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
       <button class="card" style="padding:20px; font-weight:700;" onclick="filterAndGenerate('Under 15 Minutes')">⚡ Under 15m</button>
@@ -837,10 +845,10 @@
   </div>
 
   <!-- MODAL: ABOUT -->
-  <div id="settings-modal" class="overlay">
+  <div id="settings-modal" class="overlay" role="dialog" aria-modal="true">
     <div class="overlay-header">
       <h2 style="font-size: 1.15rem; font-weight: 800;">About Pantry Chef</h2>
-      <button class="icon-btn" onclick="closeOverlay('settings-modal')">✕</button>
+      <button class="icon-btn" onclick="closeOverlay('settings-modal')" aria-label="Close about modal">✕</button>
     </div>
     <div style="display:flex; flex-direction:column; gap:14px; font-size:0.85rem; line-height:1.6; color:#94a3b8;">
       <p><strong style="color:#fff;">100% Offline Culinary Engine:</strong> Synthesizes recipes dynamically in your browser without external APIs or internet connection.</p>
@@ -849,12 +857,21 @@
   </div>
 
   <script>
+    // Storage Guards
     function loadJSON(key, fallback) {
       try {
         const v = JSON.parse(localStorage.getItem(key));
         return v ?? fallback;
       } catch {
         return fallback;
+      }
+    }
+
+    function saveJSON(key, val) {
+      try {
+        localStorage.setItem(key, JSON.stringify(val));
+      } catch (e) {
+        showToast('Storage full — changes may not persist');
       }
     }
 
@@ -933,40 +950,29 @@
     }
     function openModal(id) { openOverlay(id); }
 
+    // Escape Key Support for Overlays
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.overlay.active').forEach(el => el.classList.remove('active'));
+      }
+    });
+
     /* ==========================================================================
-       BULLETPROOF CATEGORIZATION
+       WORD-BOUNDARY REGEX CATEGORIZATION (No substring false positives)
        ========================================================================== */
+    const CATEGORY_RULES = [
+      ['Spices',   /\b(powder|seasonings?|seeds?|dried|oregano|cumin|paprika|chili|pepper flakes|salt|soy sauce|vinegar|honey|oils?|olive oil)\b/i],
+      ['Proteins', /\b(ham|hamburger|ground (beef|chuck|turkey)|patt(?:y|ies)|chicken|beef|steak|pork|turkey|eggs?|tofu|salmon|tuna|shrimp|bacon|beans?|sausages?|prosciutto|salami)\b/i],
+      ['Dairy',    /\b(milk|cheddar|cheese|butter|yogurt|parmesan|cream|mozzarella|feta|sour cream)\b/i],
+      ['Grains',   /\b(rice|pasta|bread|flour|oats|quinoa|noodles?|tortillas?|spaghetti|penne|macaroni)\b/i],
+      ['Produce',  /\b(spinach|onions?|garlic|tomatoes?|potatoes?|broccoli|lemons?|limes?|avocados?|bell peppers?|carrots?|mushrooms?|zucchini|kale|corn|cilantro|asparagus|cabbage|eggplants?|green beans?)\b/i]
+    ];
+
     function categorize(name) {
       const lower = name.toLowerCase().trim();
-
-      // 1. Check SPICES First (Catch powders, seasonings, dried herbs before produce)
-      const spiceTriggers = ['powder', 'seasoning', 'seed', 'dried', 'oregano', 'cumin', 'paprika', 'chili', 'black pepper', 'salt', 'garlic powder', 'onion powder', 'soy sauce', 'vinegar', 'honey', 'oil', 'olive oil'];
-      if (spiceTriggers.some(k => lower.includes(k))) return 'Spices';
-
-      // 2. Check PROTEINS (Catch ham, hamburger, ground meats, cold cuts)
-      const proteinTriggers = [
-        'ham', 'hamburger', 'burger', 'ground beef', 'ground chuck', 'ground turkey', 'patty',
-        'chicken', 'beef', 'steak', 'pork', 'turkey', 'egg', 'eggs', 'tofu', 'salmon',
-        'tuna', 'shrimp', 'bacon', 'beans', 'sausage', 'prosciutto', 'salami'
-      ];
-      if (proteinTriggers.some(k => lower.includes(k))) return 'Proteins';
-
-      // 3. Check DAIRY
-      const dairyTriggers = ['milk', 'cheddar', 'cheese', 'butter', 'yogurt', 'parmesan', 'cream', 'mozzarella', 'feta', 'sour cream'];
-      if (dairyTriggers.some(k => lower.includes(k))) return 'Dairy';
-
-      // 4. Check GRAINS
-      const grainTriggers = ['rice', 'pasta', 'bread', 'flour', 'oats', 'quinoa', 'noodle', 'noodles', 'tortilla', 'tortillas', 'spaghetti', 'penne', 'macaroni'];
-      if (grainTriggers.some(k => lower.includes(k))) return 'Grains';
-
-      // 5. Check PRODUCE
-      const produceTriggers = [
-        'spinach', 'onion', 'garlic', 'tomato', 'potato', 'broccoli', 'lemon', 'lime',
-        'avocado', 'pepper', 'bell pepper', 'carrot', 'mushroom', 'zucchini', 'kale', 'corn', 'cilantro', 'asparagus', 'cabbage'
-      ];
-      if (produceTriggers.some(k => lower.includes(k))) return 'Produce';
-
-      // 6. Neutral Fallback
+      for (const [category, regex] of CATEGORY_RULES) {
+        if (regex.test(lower)) return category;
+      }
       return 'Pantry Staples';
     }
 
@@ -978,15 +984,19 @@
 
       const rawItems = val.split(/,|\band\b/i).map(s => s.trim()).filter(Boolean);
       rawItems.forEach(item => {
+        const key = item.toLowerCase();
+        // Deduplicate: prevent exact same item adding twice
+        if (pantryItems.some(i => i.name.toLowerCase() === key)) return;
+
         pantryItems.push({
-          id: Date.now() + Math.random(),
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2)),
           name: item,
           category: categorize(item),
           expiring: false
         });
       });
 
-      localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
+      saveJSON('pantry_items', pantryItems);
       input.value = '';
       resetViewportScroll();
       renderPantry();
@@ -996,15 +1006,16 @@
 
     function toggleExpiring(id) {
       pantryItems = pantryItems.map(item => item.id === id ? { ...item, expiring: !item.expiring } : item);
-      localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
+      saveJSON('pantry_items', pantryItems);
       renderPantry();
       updateHomeMetrics();
+      refreshSpecialPreview();
     }
 
     function deletePantryItem(id, e) {
       e.stopPropagation();
       pantryItems = pantryItems.filter(item => item.id !== id);
-      localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
+      saveJSON('pantry_items', pantryItems);
       renderPantry();
       updateHomeMetrics();
       refreshSpecialPreview();
@@ -1031,16 +1042,20 @@
         grouped[cat].forEach(item => {
           const chip = document.createElement('div');
           chip.className = `chip ${item.expiring ? 'expiring' : ''}`;
-          chip.innerHTML = `<span>${esc(item.name)}</span><span class="chip-del" onclick="deletePantryItem(${item.id}, event)">×</span>`;
+          chip.innerHTML = `<span>${esc(item.name)}</span><span class="chip-del" onclick="deletePantryItem('${item.id}', event)" aria-label="Delete ${esc(item.name)}">×</span>`;
           chip.onclick = () => toggleExpiring(item.id);
           cloud.appendChild(chip);
         });
       });
     }
 
+    // Pluralization Helper
     function updateHomeMetrics() {
       const countEl = document.getElementById('home-pantry-count');
-      if (countEl) countEl.textContent = `${pantryItems.length} Items Logged`;
+      if (countEl) {
+        const len = pantryItems.length;
+        countEl.textContent = `${len} ${len === 1 ? 'Item' : 'Items'} Logged`;
+      }
 
       const expCount = pantryItems.filter(i => i.expiring).length;
       const sqExp = document.getElementById('sq-expiring-count');
@@ -1066,9 +1081,9 @@
     }
 
     /* ==========================================================================
-       COMBINATORIAL CULINARY SYNTHESIS ENGINE (Capped at 75)
+       SYNTHESIS ENGINE (With Limit Early-Exit & Comfort Food Support)
        ========================================================================== */
-    function synthesizeRecipes(filterType = null, onlyExpiring = false) {
+    function synthesizeRecipes(filterType = null, onlyExpiring = false, limit = 75) {
       let activeItems = pantryItems;
       if (onlyExpiring) {
         activeItems = pantryItems.filter(i => i.expiring);
@@ -1094,14 +1109,19 @@
       const seenTitles = new Set();
 
       function pushRecipe(r) {
-        if (!seenTitles.has(r.title) && generated.length < 75) {
+        if (!seenTitles.has(r.title) && generated.length < limit) {
           seenTitles.add(r.title);
           generated.push(r);
         }
       }
 
-      effectiveProteins.forEach(prot => {
-        effectiveProduce.forEach(veg => {
+      for (const prot of effectiveProteins) {
+        if (generated.length >= limit) break;
+        for (const veg of effectiveProduce) {
+          if (generated.length >= limit) break;
+
+          const hasProtMatch = proteins.includes(prot);
+          const hasVegMatch = produce.includes(veg);
 
           // Frittata / Scramble
           if (hasEggs || prot.toLowerCase().includes('egg') || !proteins.length) {
@@ -1132,8 +1152,8 @@
             title: `Crisp ${capitalize(prot)} & ${capitalize(veg)} Skillet Hash`,
             emoji: '🥔',
             time: '15 mins',
-            tier: proteins.includes(prot) && produce.includes(veg) ? '100% Match' : 'Missing 1 Item',
-            missing: proteins.includes(prot) && produce.includes(veg) ? 'None' : 'Fresh aromatics',
+            tier: hasProtMatch && hasVegMatch ? '100% Match' : 'Missing 1 Item',
+            missing: hasProtMatch && hasVegMatch ? 'None' : (!hasProtMatch ? prot : veg),
             ingredients: [
               `${6 * sMultiplier} oz ${prot} (chopped small)`,
               `1.5 cups diced ${veg}`,
@@ -1153,8 +1173,8 @@
             title: `Caramelized Sheet Pan ${capitalize(prot)} with ${capitalize(veg)}`,
             emoji: '🥦',
             time: '22 mins',
-            tier: proteins.includes(prot) && produce.includes(veg) ? '100% Match' : 'Missing 1 Item',
-            missing: 'None',
+            tier: hasProtMatch && hasVegMatch ? '100% Match' : 'Missing 1 Item',
+            missing: hasProtMatch && hasVegMatch ? 'None' : (!hasProtMatch ? prot : veg),
             ingredients: [
               `${8 * sMultiplier} oz ${prot} (cut into even bite-sized pieces)`,
               `2 cups ${veg} (chopped)`,
@@ -1169,18 +1189,19 @@
             chefTip: 'Crowding the pan creates trapped steam; spreading ingredients out ensures they roast to a crisp caramel rather than getting soggy.'
           });
 
-          // Flash Stir-Fry
+          // Flash Stir-Fry (Case-insensitive soy check & accurate tier)
+          const hasSoy = spices.some(s => s.toLowerCase().includes('soy'));
           pushRecipe({
             title: `Sizzling ${capitalize(prot)} & ${capitalize(veg)} Flash Stir-Fry`,
             emoji: '🥢',
             time: '10 mins',
-            tier: '100% Match',
-            missing: 'None',
+            tier: hasProtMatch && hasVegMatch ? '100% Match' : 'Missing 1 Item',
+            missing: hasProtMatch && hasVegMatch ? 'None' : (!hasProtMatch ? prot : veg),
             ingredients: [
               `${6 * sMultiplier} oz thinly sliced ${prot}`,
               `1.5 cups sliced ${veg}`,
               '1 tbsp neutral high-heat oil',
-              spices.includes('soy sauce') ? '2 tbsp soy sauce' : 'A pinch of salt, garlic, and cracked pepper'
+              hasSoy ? '2 tbsp soy sauce' : 'A pinch of salt, garlic, and cracked pepper'
             ],
             instructions: [
               `Heat your wok or widest skillet over highest heat until lightly smoking.`,
@@ -1191,18 +1212,20 @@
           });
 
           // Grains, Pastas & Melts
-          effectiveGrains.forEach(grn => {
+          for (const grn of effectiveGrains) {
+            if (generated.length >= limit) break;
             const isRice = grn.toLowerCase().includes('rice');
             const isPasta = grn.toLowerCase().includes('pasta') || grn.toLowerCase().includes('noodle') || grn.toLowerCase().includes('spaghetti');
             const isBread = grn.toLowerCase().includes('tortilla') || grn.toLowerCase().includes('bread');
 
             if (isRice) {
+              const hasRice = grains.some(g => g.toLowerCase().includes('rice'));
               pushRecipe({
                 title: `Crispy Skillet ${capitalize(prot)} & ${capitalize(veg)} Rice Bowl`,
                 emoji: '🍚',
                 time: '15 mins',
-                tier: grains.some(g => g.toLowerCase().includes('rice')) ? '100% Match' : 'Missing 1 Item',
-                missing: grains.some(g => g.toLowerCase().includes('rice')) ? 'None' : 'Pre-cooked rice',
+                tier: hasRice && hasProtMatch ? '100% Match' : 'Missing 1 Item',
+                missing: hasRice ? 'None' : 'Cooked rice',
                 ingredients: [
                   `${1.5 * sMultiplier} cups cooked rice`,
                   `${6 * sMultiplier} oz ${prot}`,
@@ -1218,12 +1241,13 @@
                 chefTip: 'Cold, day-old grains fry far better than fresh warm rice because the dried starch grains brown instead of clumping.'
               });
             } else if (isPasta) {
+              const hasPasta = grains.some(g => g.toLowerCase().includes('pasta'));
               pushRecipe({
                 title: `Pan-Glazed ${capitalize(prot)} & ${capitalize(veg)} ${capitalize(grn)}`,
                 emoji: '🍝',
                 time: '18 mins',
-                tier: grains.some(g => g.toLowerCase().includes('pasta')) ? '100% Match' : 'Missing 1 Item',
-                missing: grains.some(g => g.toLowerCase().includes('pasta')) ? 'None' : 'Pasta of choice',
+                tier: hasPasta && hasProtMatch ? '100% Match' : 'Missing 1 Item',
+                missing: hasPasta ? 'None' : 'Pasta of choice',
                 ingredients: [
                   `${6 * sMultiplier} oz ${grn}`,
                   `${6 * sMultiplier} oz ${prot}`,
@@ -1243,7 +1267,7 @@
                 title: `Toasted ${capitalize(prot)} & ${capitalize(veg)} Panini Melt`,
                 emoji: '🧀',
                 time: '10 mins',
-                tier: hasCheese ? '100% Match' : 'Missing 1 Item',
+                tier: hasCheese && hasProtMatch ? '100% Match' : 'Missing 1 Item',
                 missing: hasCheese ? 'None' : 'Melting cheese',
                 ingredients: [
                   `${sMultiplier} tortillas or bread slices`,
@@ -1260,21 +1284,23 @@
                 chefTip: 'Keep temperature moderate so the cheese fully melts through before the exterior bread over-browns.'
               });
             }
-          });
+          }
+        }
+      }
 
-        });
-      });
-
+      // Filter handling (Fixed: Comfort Food implemented; High Protein handles fallbacks)
       let filtered = generated;
       if (filterType === 'Under 15 Minutes') {
         filtered = generated.filter(r => parseInt(r.time) <= 15);
       } else if (filterType === 'High Protein') {
-        filtered = generated.filter(r => proteins.some(p => r.title.toLowerCase().includes(p.toLowerCase())));
+        filtered = generated.filter(r => effectiveProteins.some(p => r.title.toLowerCase().includes(p.toLowerCase())));
       } else if (filterType === 'One-Pan Meal') {
         filtered = generated.filter(r => r.title.includes('Skillet') || r.title.includes('Sheet Pan') || r.title.includes('Frittata'));
+      } else if (filterType === 'Comfort Food') {
+        filtered = generated.filter(r => r.title.includes('Melt') || r.title.includes('Hash') || r.title.includes('Pasta') || r.title.includes('Frittata'));
       }
 
-      return filtered.slice(0, 75);
+      return filtered.slice(0, limit);
     }
 
     function setPortion(num) {
@@ -1291,7 +1317,7 @@
       container.innerHTML = '';
 
       if (!currentRecipes.length) {
-        container.innerHTML = `<div style="color:#94a3b8; font-size:0.85rem; padding:20px; text-align:center;">Add ingredients to your pantry to see matched meals!</div>`;
+        container.innerHTML = `<div style="color:#94a3b8; font-size:0.85rem; padding:20px; text-align:center;">No matching meals found. Add more ingredients to your pantry!</div>`;
         return;
       }
 
@@ -1310,7 +1336,7 @@
                 <div style="font-size:0.75rem; color:#94a3b8;">${esc(r.time)} • <span style="color:#34d399;">${esc(r.tier)}</span></div>
               </div>
             </div>
-            <button class="icon-btn" onclick="saveToFavorites(${idx}, event)">❤️</button>
+            <button class="icon-btn" onclick="saveToFavorites(${idx}, event)" aria-label="Save to favorites">❤️</button>
           </div>
           ${r.missing && r.missing !== 'None' ? `<div style="font-size:0.75rem; color:#fde68a; margin-top:6px;">⚠️ Swap: ${esc(r.missing)}</div>` : ''}
           <div class="recipe-details">
@@ -1355,6 +1381,7 @@
         recognition.lang = 'en-US';
         const icon = document.getElementById('quick-meal-icon');
         icon.textContent = '🔴';
+        
         recognition.onresult = (e) => {
           icon.textContent = '🎙️';
           const spoken = e.results[0][0].transcript;
@@ -1363,6 +1390,10 @@
         recognition.onerror = () => {
           icon.textContent = '🎙️';
           fallbackTextPrompt();
+        };
+        // Fixed: Reset mic icon reliably if recognition finishes or aborts
+        recognition.onend = () => {
+          icon.textContent = '🎙️';
         };
         recognition.start();
       } else {
@@ -1377,22 +1408,24 @@
 
     function addItemsAndRun(text) {
       text.split(/,|\band\b/i).forEach(item => {
-        if (item.trim()) {
+        const key = item.trim().toLowerCase();
+        if (key && !pantryItems.some(i => i.name.toLowerCase() === key)) {
           pantryItems.push({
-            id: Date.now() + Math.random(),
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2)),
             name: item.trim(),
             category: categorize(item.trim()),
             expiring: false
           });
         }
       });
-      localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
+      saveJSON('pantry_items', pantryItems);
       updateHomeMetrics();
       refreshSpecialPreview();
       generateFromMasterPantry();
     }
 
     function triggerUnlockTeaser() {
+      lastFilterContext = null; // Clear context so portion toggle doesn't hijack view
       if (!pantryItems.length) return showToast('Add items to pantry first!');
       const proteins = pantryItems.filter(i => i.category === 'Proteins');
       const dairy = pantryItems.filter(i => i.category === 'Dairy');
@@ -1445,6 +1478,7 @@
     }
 
     function triggerChefSecret() {
+      lastFilterContext = null; // Clear context so portion toggle doesn't hijack view
       openOverlay('overlay-results');
       document.getElementById('results-title').textContent = "Chef's Flavor Secret";
       const container = document.getElementById('results-container');
@@ -1479,7 +1513,7 @@
     }
 
     /* ==========================================================================
-       WEB AUDIO SYNTHESIZED KITCHEN CHIME (100% Offline Sound)
+       WEB AUDIO SYNTHESIZED KITCHEN CHIME
        ========================================================================== */
     let audioCtx = null;
     function initAudioContext() {
@@ -1496,14 +1530,11 @@
       try {
         initAudioContext();
         if (!audioCtx) return;
-
         const now = audioCtx.currentTime;
-        
-        // Two-tone bell melody (Chime 1: 587Hz / D5, Chime 2: 880Hz / A5)
+
         const playTone = (freq, start, duration) => {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
-
           osc.type = 'sine';
           osc.frequency.setValueAtTime(freq, start);
 
@@ -1513,29 +1544,28 @@
 
           osc.connect(gain);
           gain.connect(audioCtx.destination);
-
           osc.start(start);
           osc.stop(start + duration);
         };
 
-        // Double ping pattern
         playTone(587.33, now, 0.4);
         playTone(880.00, now + 0.18, 0.8);
         playTone(587.33, now + 0.9, 0.4);
         playTone(880.00, now + 1.08, 1.0);
 
-        if ('vibrate' in navigator) {
-          navigator.vibrate([200, 100, 200, 100, 400]);
-        }
+        if ('vibrate' in navigator) navigator.vibrate([200, 100, 200, 100, 400]);
       } catch (err) {
         console.warn('Audio playback error:', err);
       }
     }
 
-    // Timer Stepper & Countdown Logic
+    /* ==========================================================================
+       TIMESTAMP-BASED STOVETOP TIMER (Immune to sleep/background throttling)
+       ========================================================================== */
     let timerDuration = 300;
     let timerRemaining = 300;
     let timerInterval = null;
+    let targetEndTime = null;
 
     function formatTime(s) {
       const mins = Math.floor(s / 60);
@@ -1543,8 +1573,35 @@
       return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
 
+    function timerTick() {
+      if (!targetEndTime) return;
+      const left = Math.max(0, Math.round((targetEndTime - Date.now()) / 1000));
+      timerRemaining = left;
+      document.getElementById('timer-readout').textContent = formatTime(left);
+
+      if (left <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        targetEndTime = null;
+        const startBtn = document.getElementById('btn-timer-start');
+        startBtn.textContent = 'Start Timer';
+        startBtn.style.background = 'var(--cobalt)';
+        timerRemaining = timerDuration;
+        document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
+        playKitchenChime();
+        showToast('🔔 Timer finished!');
+      }
+    }
+
+    // Resync immediately when phone screen turns back on or app foregrounds
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && timerInterval) {
+        timerTick();
+      }
+    });
+
     function adjustTimer(deltaSeconds) {
-      if (timerInterval) return; // Prevent adjusting mid-countdown
+      if (timerInterval) return;
       timerDuration = Math.max(60, Math.min(3600, timerDuration + deltaSeconds));
       timerRemaining = timerDuration;
       document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
@@ -1554,6 +1611,7 @@
       if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
+        targetEndTime = null;
       }
       timerDuration = seconds;
       timerRemaining = seconds;
@@ -1564,33 +1622,24 @@
     }
 
     function toggleTimer() {
-      initAudioContext(); // Pre-warm audio on user touch gesture
+      initAudioContext();
       const startBtn = document.getElementById('btn-timer-start');
 
       if (timerInterval) {
+        // Pause: capture remaining seconds and clear end timestamp
+        timerRemaining = Math.max(0, Math.round((targetEndTime - Date.now()) / 1000));
         clearInterval(timerInterval);
         timerInterval = null;
+        targetEndTime = null;
         startBtn.textContent = 'Resume';
         startBtn.style.background = 'var(--emerald)';
       } else {
+        // Start or Resume: calculate future wall-clock epoch
+        targetEndTime = Date.now() + (timerRemaining * 1000);
         startBtn.textContent = 'Pause';
         startBtn.style.background = 'var(--ruby)';
-        timerInterval = setInterval(() => {
-          timerRemaining--;
-          document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
-          
-          if (timerRemaining <= 0) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            startBtn.textContent = 'Start Timer';
-            startBtn.style.background = 'var(--cobalt)';
-            timerRemaining = timerDuration;
-            document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
-            
-            playKitchenChime();
-            showToast('🔔 Timer finished!');
-          }
-        }, 1000);
+        timerTick();
+        timerInterval = setInterval(timerTick, 250);
       }
     }
 
@@ -1599,6 +1648,7 @@
         clearInterval(timerInterval);
         timerInterval = null;
       }
+      targetEndTime = null;
       timerRemaining = timerDuration;
       document.getElementById('timer-readout').textContent = formatTime(timerRemaining);
       const startBtn = document.getElementById('btn-timer-start');
@@ -1606,7 +1656,7 @@
       startBtn.style.background = 'var(--cobalt)';
     }
 
-    // 2. Tonight's Chef Special Preview
+    // Tonight's Chef Special Preview (Fast 1-recipe generation)
     let currentSpecialRecipe = null;
     function refreshSpecialPreview() {
       const titleEl = document.getElementById('special-title');
@@ -1620,7 +1670,8 @@
         return;
       }
 
-      const recipes = synthesizeRecipes();
+      // Early-exit limit: synthesize exactly 1 recipe
+      const recipes = synthesizeRecipes(null, false, 1);
       if (recipes.length) {
         currentSpecialRecipe = recipes[0];
         titleEl.textContent = `${currentSpecialRecipe.emoji} ${currentSpecialRecipe.title}`;
@@ -1634,7 +1685,7 @@
       showResults("Tonight's Chef Special", [currentSpecialRecipe]);
     }
 
-    // 3. Roll the Dice / Slot Machine Spin
+    // Roll the Dice (Slot Machine)
     let isSpinning = false;
     function spinSlotReels() {
       if (isSpinning) return;
@@ -1721,7 +1772,7 @@
       let favs = loadJSON('pantry_favs', []);
       if (!favs.some(f => f.title === recipe.title)) {
         favs.push({ ...recipe, id: Date.now() });
-        localStorage.setItem('pantry_favs', JSON.stringify(favs));
+        saveJSON('pantry_favs', favs);
         showToast(`Saved ${recipe.title}!`);
       } else {
         showToast('Already in Favorites');
@@ -1750,7 +1801,7 @@
               <div style="font-weight:700; font-size:0.9rem;">${esc(f.title)}</div>
               <div style="font-size:0.75rem; color:#94a3b8;">${esc(f.time)} • Tap to view</div>
             </div>
-            <button class="icon-btn" onclick="deleteFavorite(${f.id}, event)">🗑️</button>
+            <button class="icon-btn" onclick="deleteFavorite(${f.id}, event)" aria-label="Delete ${esc(f.title)}">🗑️</button>
           </div>
           <div class="recipe-details">
             <strong>Ingredients:</strong>
@@ -1771,7 +1822,7 @@
       e.stopPropagation();
       let favs = loadJSON('pantry_favs', []);
       favs = favs.filter(f => f.id !== id);
-      localStorage.setItem('pantry_favs', JSON.stringify(favs));
+      saveJSON('pantry_favs', favs);
       renderFavorites();
       showToast('Removed from Favorites');
     }
