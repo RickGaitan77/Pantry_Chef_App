@@ -569,7 +569,7 @@
       <!-- TAB 2: PANTRY -->
       <section id="tab-pantry" class="tab-content">
         <div class="pantry-input-row">
-          <input type="text" id="pantry-input" class="pantry-input" placeholder="Type ingredients (e.g. chicken, rice, garlic)..." onblur="resetViewportScroll()">
+          <input type="text" id="pantry-input" class="pantry-input" placeholder="Type ingredients (e.g. bacon, eggs, spinach)..." onblur="resetViewportScroll()">
           <button class="btn-add-item" onclick="handleAddPantryItem()">Add</button>
         </div>
 
@@ -664,7 +664,7 @@
       <button class="icon-btn" onclick="closeOverlay('settings-modal')">✕</button>
     </div>
     <div style="display:flex; flex-direction:column; gap:14px; font-size:0.85rem; line-height:1.6; color:#94a3b8;">
-      <p><strong style="color:#fff;">100% Offline Culinary Engine:</strong> Operates completely inside your browser using dynamic pantry ingredient mapping. No external APIs, accounts, or connections required.</p>
+      <p><strong style="color:#fff;">100% Offline Culinary Engine:</strong> Operates entirely in your browser through combinatorial ingredient synthesis. No external APIs, network latency, or service caps.</p>
       <p><strong style="color:#fff;">Local & Private:</strong> All inventory and favorites are saved locally on your device.</p>
     </div>
   </div>
@@ -752,10 +752,10 @@
     function openModal(id) { openOverlay(id); }
 
     const CATEGORIES = {
-      Proteins: ['chicken', 'beef', 'steak', 'pork', 'turkey', 'egg', 'eggs', 'tofu', 'salmon', 'tuna', 'shrimp', 'bacon', 'beans', 'sausage', 'ground beef'],
-      Produce: ['spinach', 'onion', 'garlic', 'tomato', 'potato', 'potatoes', 'broccoli', 'lemon', 'lime', 'avocado', 'peppers', 'pepper', 'carrot', 'herbs', 'mushroom', 'mushrooms', 'zucchini', 'kale', 'corn', 'cilantro'],
-      Dairy: ['milk', 'cheddar', 'cheese', 'butter', 'yogurt', 'parmesan', 'cream', 'mozzarella', 'feta'],
-      Grains: ['rice', 'pasta', 'bread', 'flour', 'oats', 'quinoa', 'noodles', 'tortilla', 'tortillas', 'spaghetti'],
+      Proteins: ['chicken', 'beef', 'steak', 'pork', 'turkey', 'egg', 'eggs', 'tofu', 'salmon', 'tuna', 'shrimp', 'bacon', 'beans', 'sausage', 'ground beef', 'ham'],
+      Produce: ['spinach', 'onion', 'onions', 'garlic', 'tomato', 'tomatoes', 'potato', 'potatoes', 'broccoli', 'lemon', 'lime', 'avocado', 'peppers', 'pepper', 'bell pepper', 'carrot', 'carrots', 'herbs', 'mushroom', 'mushrooms', 'zucchini', 'kale', 'corn', 'cilantro', 'asparagus', 'cabbage'],
+      Dairy: ['milk', 'cheddar', 'cheese', 'butter', 'yogurt', 'parmesan', 'cream', 'mozzarella', 'feta', 'sour cream'],
+      Grains: ['rice', 'pasta', 'bread', 'flour', 'oats', 'quinoa', 'noodles', 'tortilla', 'tortillas', 'spaghetti', 'penne', 'macaroni'],
       Spices: ['oil', 'olive oil', 'salt', 'black pepper', 'soy sauce', 'vinegar', 'honey', 'oregano', 'cumin', 'paprika', 'chili', 'garlic powder']
     };
 
@@ -861,190 +861,264 @@
     }
 
     /* ==========================================================================
-       DYNAMIC INGREDIENT RECIPE SYNTHESIZER
+       COMBINATORIAL CULINARY SYNTHESIS ENGINE (Capped at 75)
        ========================================================================== */
-    function synthesizeRecipes(filterType = null) {
-      if (!pantryItems.length) return [];
+    function synthesizeRecipes(filterType = null, onlyExpiring = false) {
+      let activeItems = pantryItems;
+      if (onlyExpiring) {
+        activeItems = pantryItems.filter(i => i.expiring);
+        if (!activeItems.length) return [];
+      }
+      if (!activeItems.length) return [];
 
-      const proteins = pantryItems.filter(i => i.category === 'Proteins').map(i => i.name);
-      const produce = pantryItems.filter(i => i.category === 'Produce').map(i => i.name);
-      const grains = pantryItems.filter(i => i.category === 'Grains').map(i => i.name);
-      const dairy = pantryItems.filter(i => i.category === 'Dairy').map(i => i.name);
-      const spices = pantryItems.filter(i => i.category === 'Spices').map(i => i.name);
+      const proteins = activeItems.filter(i => i.category === 'Proteins').map(i => i.name);
+      const produce = activeItems.filter(i => i.category === 'Produce').map(i => i.name);
+      const grains = activeItems.filter(i => i.category === 'Grains').map(i => i.name);
+      const dairy = activeItems.filter(i => i.category === 'Dairy').map(i => i.name);
+      const spices = activeItems.filter(i => i.category === 'Spices').map(i => i.name);
 
-      const hasEggs = pantryItems.some(i => i.name.toLowerCase().includes('egg'));
-      const hasCheese = pantryItems.some(i => i.name.toLowerCase().includes('cheese') || i.name.toLowerCase().includes('cheddar'));
-      const hasRice = pantryItems.some(i => i.name.toLowerCase().includes('rice'));
-      const hasPasta = pantryItems.some(i => i.name.toLowerCase().includes('pasta') || i.name.toLowerCase().includes('noodle'));
-      const hasTortilla = pantryItems.some(i => i.name.toLowerCase().includes('tortilla') || i.name.toLowerCase().includes('bread'));
-
-      const p1 = proteins[0] || 'protein';
-      const p2 = proteins[1] || p1;
-      const v1 = produce[0] || 'aromatics';
-      const v2 = produce[1] || produce[0] || 'garden vegetables';
-      const g1 = grains[0] || 'grain base';
-      const d1 = dairy[0] || 'butter';
-
+      const hasEggs = activeItems.some(i => i.name.toLowerCase().includes('egg'));
+      const hasCheese = activeItems.some(i => i.name.toLowerCase().includes('cheese') || i.name.toLowerCase().includes('cheddar') || i.name.toLowerCase().includes('parmesan'));
       const sMultiplier = currentServings === 2 ? 1 : 2;
+
+      // Fallback lists if categories are sparse
+      const effectiveProteins = proteins.length ? proteins : ['tofu', 'egg', 'beans'];
+      const effectiveProduce = produce.length ? produce : ['garlic', 'onion', 'spinach'];
+      const effectiveGrains = grains.length ? grains : ['rice', 'pasta', 'tortilla'];
+
       const generated = [];
+      const seenTitles = new Set();
 
-      // 1. Egg Dish (Only if user has eggs, or Missing 1 Item)
-      if (hasEggs || proteins.length) {
-        const primary = hasEggs ? (proteins.find(p => !p.toLowerCase().includes('egg')) || v1) : p1;
-        generated.push({
-          title: `Golden ${capitalize(primary)} & ${capitalize(v1)} Frittata`,
-          emoji: '🍳',
-          time: '12 mins',
-          tier: hasEggs ? '100% Match' : 'Missing 1 Item',
-          missing: hasEggs ? 'None' : 'Eggs (or substitute silken tofu)',
-          ingredients: [
-            `${4 * sMultiplier} large eggs (whisked)`,
-            `${4 * sMultiplier} oz ${primary} (diced)`,
-            `1/2 cup ${v1} (sautéed)`,
-            hasCheese ? `1/3 cup ${dairy.find(d => d.toLowerCase().includes('cheese')) || 'cheese'}` : 'Pinch of salt and black pepper',
-            '1 tbsp butter or cooking oil'
-          ],
-          instructions: [
-            `Melt butter or oil in an 8-inch skillet over medium heat. Sauté ${v1} and ${primary} for 3 minutes until warmed and fragrant.`,
-            `Pour in whisked eggs with a generous pinch of salt. Tilt skillet to distribute evenly.`,
-            `Cook on medium-low for 5 minutes until edges set, sprinkle cheese or seasonings over top, and cover with a lid for 2 minutes to melt.`
-          ],
-          chefTip: 'Cook on low heat covered; trapped steam finishes the eggs delicately without browning the bottom.'
-        });
+      function pushRecipe(r) {
+        if (!seenTitles.has(r.title) && generated.length < 75) {
+          seenTitles.add(r.title);
+          generated.push(r);
+        }
       }
 
-      // 2. Grain Bowl or Fried Rice (Only if grains or rice present)
-      if (hasRice || grains.length || filterType === 'One-Pan Meal') {
-        const grainName = hasRice ? 'Rice' : capitalize(g1);
-        generated.push({
-          title: `Crispy Skillet ${capitalize(p1)} ${grainName}`,
-          emoji: '🍚',
-          time: '15 mins',
-          tier: (hasRice || grains.length) && proteins.length ? '100% Match' : 'Missing 1 Item',
-          missing: (hasRice || grains.length) ? 'None' : 'Cooked rice or grains',
-          ingredients: [
-            `${1.5 * sMultiplier} cups cooked ${grainName.toLowerCase()}`,
-            `${6 * sMultiplier} oz ${p1} (sliced)`,
-            `1 cup chopped ${v1}${produce[1] ? ' and ' + v2 : ''}`,
-            spices.length ? spices.slice(0, 2).join(', ') : 'Soy sauce or garlic salt',
-            '1.5 tbsp cooking oil'
-          ],
-          instructions: [
-            `Get your skillet or wok sizzling hot with 1 tbsp oil. Sear ${p1} until browned and set aside.`,
-            `Add remaining oil and toss in ${v1}. Sauté for 2 minutes over high heat.`,
-            `Add the ${grainName.toLowerCase()} and press flat against the pan surface. Let it sizzle undisturbed for 3 minutes for a crispy bottom, then toss with ${p1}.`
-          ],
-          chefTip: 'High pan heat and leaving the grains untouched on the hot metal creates true wok-style crispiness.'
-        });
-      }
+      // Loop through ingredient combinations across 10 Culinary Archetypes
+      effectiveProteins.forEach(prot => {
+        effectiveProduce.forEach(veg => {
 
-      // 3. Pasta Sauté (Only if user logged pasta)
-      if (hasPasta || grains.some(g => g.toLowerCase().includes('pasta'))) {
-        generated.push({
-          title: `Pan-Glazed ${capitalize(p1)} & ${capitalize(v1)} Pasta`,
-          emoji: '🍝',
-          time: '18 mins',
-          tier: proteins.length ? '100% Match' : 'Missing 1 Item',
-          missing: proteins.length ? 'None' : 'Protein of choice',
-          ingredients: [
-            `${6 * sMultiplier} oz pasta of choice`,
-            `${6 * sMultiplier} oz ${p1}`,
-            `1 cup sliced ${v1}`,
-            dairy.length ? `2 tbsp ${dairy[0]}` : '2 tbsp olive oil',
-            '1/4 cup reserved starchy pasta cooking water'
-          ],
-          instructions: [
-            `Cook pasta in well-salted water until al dente. Reserve 1/4 cup pasta cooking water before draining.`,
-            `In a wide pan, sear ${p1} and sauté ${v1} in butter or olive oil until tender.`,
-            `Dump the pasta directly into the skillet, pour in the reserved cooking water, and swirl vigorously over medium heat for 60 seconds to create a glossy emulsion.`
-          ],
-          chefTip: 'The starch in the pasta water emulsifies with fat to create a restaurant-grade sauce with zero cream.'
-        });
-      }
+          // 1. Skillet Frittata / Scramble
+          if (hasEggs || prot.toLowerCase().includes('egg') || !proteins.length) {
+            pushRecipe({
+              title: `Rustic ${capitalize(prot)} & ${capitalize(veg)} Frittata`,
+              emoji: '🍳',
+              time: '12 mins',
+              tier: hasEggs ? '100% Match' : 'Missing 1 Item',
+              missing: hasEggs ? 'None' : 'Fresh eggs (or silken tofu)',
+              ingredients: [
+                `${4 * sMultiplier} large eggs (beaten)`,
+                `${4 * sMultiplier} oz ${prot} (diced or crumbled)`,
+                `1/2 cup ${veg} (sautéed)`,
+                hasCheese ? `1/3 cup cheese` : 'Salt & cracked black pepper',
+                '1 tbsp butter or olive oil'
+              ],
+              instructions: [
+                `Sauté ${veg} and ${prot} in a hot skillet with melted butter for 3 minutes.`,
+                `Pour beaten eggs over the filling, tilting the pan to ensure even distribution.`,
+                `Cover and cook on low for 5 minutes until fluffy and set, then finish with black pepper.`
+              ],
+              chefTip: 'Keep heat low and trapped under a lid; gentle steam creates a tender custard texture without burning the bottom.'
+            });
+          }
 
-      // 4. Melt / Quesadilla / Flatbread (Only if tortillas, bread, or cheese logged)
-      if (hasTortilla || hasCheese || dairy.length) {
-        const wrapName = hasTortilla ? 'Quesadilla' : 'Crisp Panini Melt';
-        generated.push({
-          title: `Toasted ${capitalize(p1)} & ${capitalize(v1)} ${wrapName}`,
-          emoji: '🧀',
-          time: '10 mins',
-          tier: hasTortilla && hasCheese ? '100% Match' : 'Missing 1 Item',
-          missing: hasTortilla ? (hasCheese ? 'None' : 'Cheddar or melting cheese') : 'Tortillas or sliced bread',
-          ingredients: [
-            `${sMultiplier} tortillas or bread slices`,
-            `${4 * sMultiplier} oz shredded or sliced ${hasCheese ? 'cheese' : d1}`,
-            `${4 * sMultiplier} oz cooked ${p1}`,
-            `1/4 cup chopped ${v1}`,
-            '1 tbsp butter or oil for crisping'
-          ],
-          instructions: [
-            `Layer cheese, ${p1}, and ${v1} evenly across half of each tortilla or between bread slices.`,
-            `Heat butter or oil in a heavy skillet over medium-low heat.`,
-            `Cook 3–4 minutes per side, pressing firmly with a spatula, until the exterior is deeply golden and cheese is molten.`
-          ],
-          chefTip: 'Keep heat medium-low so the interior reaches melting temperature before the bread burns.'
-        });
-      }
+          // 2. Caramelized Skillet Hash
+          pushRecipe({
+            title: `Crisp ${capitalize(prot)} & ${capitalize(veg)} Skillet Hash`,
+            emoji: '🥔',
+            time: '15 mins',
+            tier: proteins.includes(prot) && produce.includes(veg) ? '100% Match' : 'Missing 1 Item',
+            missing: proteins.includes(prot) && produce.includes(veg) ? 'None' : 'Fresh aromatics',
+            ingredients: [
+              `${6 * sMultiplier} oz ${prot} (chopped small)`,
+              `1.5 cups diced ${veg}`,
+              '1.5 tbsp cooking oil or butter',
+              '1/2 tsp salt, pepper, and garlic seasoning'
+            ],
+            instructions: [
+              `Heat oil in a heavy skillet over medium-high heat until shimmering.`,
+              `Add ${veg} and ${prot}, pressing down firmly with a spatula to make direct contact with the pan.`,
+              `Let cook undisturbed for 4 minutes to form a deep brown crust before flipping and tossing.`
+            ],
+            chefTip: 'Do not stir constantly; letting the ingredients sit undisturbed on hot cast iron creates maximum Maillard browning.'
+          });
 
-      // 5. Caramelized Sheet Pan or Sauté Skillet (Universal fallback built strictly from user produce & protein)
-      if (proteins.length || produce.length) {
-        generated.push({
-          title: `Caramelized ${capitalize(p1)} & ${capitalize(v1)} Roast`,
-          emoji: '🥘',
-          time: '20 mins',
-          tier: '100% Match',
-          missing: 'None',
-          ingredients: [
-            `${8 * sMultiplier} oz ${p1} (cut into bite-sized pieces)`,
-            `${2 * sMultiplier} cups ${v1}${produce[1] ? ' and ' + v2 : ''}`,
-            '2 tbsp cooking oil',
-            spices.length ? spices.join(', ') : 'Salt, pepper, and garlic powder'
-          ],
-          instructions: [
-            `Preheat oven to 425°F (or heat a wide cast-iron skillet over high heat with oil).`,
-            `Toss ${p1} and ${v1} with oil, salt, and seasonings until thoroughly coated.`,
-            `Spread onto a tray or skillet in a single uncrowded layer. Roast or sear for 15–18 minutes until edges are blistered and tender.`
-          ],
-          chefTip: 'Give vegetables ample space on the hot surface; overcrowding causes them to steam instead of caramelize.'
-        });
-      }
+          // 3. Sheet Pan Roast
+          pushRecipe({
+            title: `Caramelized Sheet Pan ${capitalize(prot)} with ${capitalize(veg)}`,
+            emoji: '🥦',
+            time: '22 mins',
+            tier: proteins.includes(prot) && produce.includes(veg) ? '100% Match' : 'Missing 1 Item',
+            missing: 'None',
+            ingredients: [
+              `${8 * sMultiplier} oz ${prot} (cut into even bite-sized pieces)`,
+              `2 cups ${veg} (chopped)`,
+              '2 tbsp olive oil',
+              spices.length ? spices.slice(0, 2).join(', ') : 'Coarse salt, black pepper, paprika'
+            ],
+            instructions: [
+              `Preheat your oven to 425°F (220°C).`,
+              `Toss ${prot} and ${veg} directly on the baking sheet with oil and seasonings until evenly coated.`,
+              `Spread into a single layer with space between items and roast for 18–20 minutes until edges are blistered and tender.`
+            ],
+            chefTip: 'Crowding the pan creates trapped steam; spreading ingredients out ensures they roast to a crisp caramel rather than getting soggy.'
+          });
 
-      // 6. Savory Sauté / Hash
-      if (produce.some(p => p.toLowerCase().includes('potato')) || proteins.length > 1 || produce.length > 1) {
-        const baseName = produce.find(p => p.toLowerCase().includes('potato')) || v1;
-        generated.push({
-          title: `Crisp ${capitalize(p1)} & ${capitalize(baseName)} Skillet Hash`,
-          emoji: '🥔',
-          time: '15 mins',
-          tier: '100% Match',
-          missing: 'None',
-          ingredients: [
-            `${1.5 * sMultiplier} cups diced ${baseName}`,
-            `${6 * sMultiplier} oz ${p1} (diced)`,
-            `1/2 cup diced ${v2}`,
-            '1.5 tbsp butter or oil',
-            'Salt and fresh cracked black pepper'
-          ],
-          instructions: [
-            `Heat oil in a skillet over medium-high heat. Add diced ${baseName} and cook undisturbed for 4 minutes to build a crust.`,
-            `Stir in ${p1} and ${v2}, seasoning generously.`,
-            `Cook an additional 5 minutes, pressing down with a spatula until everything is crisp and caramelized.`
-          ],
-          chefTip: 'Dicing ingredients to uniform small cubes ensures they finish cooking at the exact same moment.'
+          // 4. Aromatic Stir-Fry
+          pushRecipe({
+            title: `Sizzling ${capitalize(prot)} & ${capitalize(veg)} Flash Stir-Fry`,
+            emoji: '🥢',
+            time: '10 mins',
+            tier: '100% Match',
+            missing: 'None',
+            ingredients: [
+              `${6 * sMultiplier} oz thinly sliced ${prot}`,
+              `1.5 cups sliced ${veg}`,
+              '1 tbsp neutral high-heat oil',
+              spices.includes('soy sauce') ? '2 tbsp soy sauce' : 'A pinch of salt, garlic, and cracked pepper'
+            ],
+            instructions: [
+              `Heat your wok or widest skillet over highest heat until lightly smoking.`,
+              `Sear ${prot} in oil for 2 minutes until browned, then push to the perimeter.`,
+              `Toss in ${veg} for 90 seconds of rapid stirring so it stays vibrant and crunchy.`
+            ],
+            chefTip: 'Cook in rapid high-heat bursts to preserve the natural sugars and snap of fresh produce.'
+          });
+
+          // 5. Simmered Herb Pot / Soup
+          pushRecipe({
+            title: `Warm Simmered ${capitalize(prot)} & ${capitalize(veg)} Broth`,
+            emoji: '🍲',
+            time: '20 mins',
+            tier: '100% Match',
+            missing: 'None',
+            ingredients: [
+              `${6 * sMultiplier} oz ${prot}`,
+              `1 cup sliced ${veg}`,
+              `${2 * sMultiplier} cups water or broth`,
+              'Salt, pepper, and dried herbs to taste'
+            ],
+            instructions: [
+              `Lightly brown ${prot} in a saucepan with a drop of oil for 3 minutes.`,
+              `Add ${veg} and pour in ${2 * sMultiplier} cups of liquid, bringing it to a rolling boil.`,
+              `Lower heat and simmer for 15 minutes to extract natural flavors into a comforting, savory reduction.`
+            ],
+            chefTip: 'A splash of vinegar or citrus off the heat cuts through broth heaviness and balances savory notes.'
+          });
+
+          // 6. Grains, Pastas & Melts
+          effectiveGrains.forEach(grn => {
+            const isRice = grn.toLowerCase().includes('rice');
+            const isPasta = grn.toLowerCase().includes('pasta') || grn.toLowerCase().includes('noodle') || grn.toLowerCase().includes('spaghetti');
+            const isBread = grn.toLowerCase().includes('tortilla') || grn.toLowerCase().includes('bread');
+
+            if (isRice) {
+              pushRecipe({
+                title: `Crispy Skillet ${capitalize(prot)} & ${capitalize(veg)} Rice Bowl`,
+                emoji: '🍚',
+                time: '15 mins',
+                tier: grains.some(g => g.toLowerCase().includes('rice')) ? '100% Match' : 'Missing 1 Item',
+                missing: grains.some(g => g.toLowerCase().includes('rice')) ? 'None' : 'Pre-cooked rice',
+                ingredients: [
+                  `${1.5 * sMultiplier} cups cooked rice`,
+                  `${6 * sMultiplier} oz ${prot}`,
+                  `1 cup sliced ${veg}`,
+                  '1.5 tbsp cooking oil',
+                  'Soy sauce or seasoned garlic salt'
+                ],
+                instructions: [
+                  `Sear ${prot} in a hot skillet with oil, then set aside.`,
+                  `Quickly sauté ${veg} for 2 minutes, then spread cooked rice across the pan.`,
+                  `Press down and let the rice sizzle for 3 minutes undisturbed to create crispy golden socarrat, then toss together.`
+                ],
+                chefTip: 'Cold, day-old grains fry far better than fresh warm rice because the dried starch grains brown instead of clumping.'
+              });
+            } else if (isPasta) {
+              pushRecipe({
+                title: `Pan-Glazed ${capitalize(prot)} & ${capitalize(veg)} ${capitalize(grn)}`,
+                emoji: '🍝',
+                time: '18 mins',
+                tier: grains.some(g => g.toLowerCase().includes('pasta')) ? '100% Match' : 'Missing 1 Item',
+                missing: grains.some(g => g.toLowerCase().includes('pasta')) ? 'None' : 'Pasta of choice',
+                ingredients: [
+                  `${6 * sMultiplier} oz ${grn}`,
+                  `${6 * sMultiplier} oz ${prot}`,
+                  `1 cup ${veg}`,
+                  dairy.length ? `2 tbsp ${dairy[0]}` : '2 tbsp olive oil',
+                  '1/4 cup reserved starchy pasta cooking water'
+                ],
+                instructions: [
+                  `Boil ${grn} in salted water until al dente, reserving 1/4 cup cooking water before draining.`,
+                  `In a skillet, sauté ${prot} and ${veg} in oil or butter until tender.`,
+                  `Toss the pasta into the skillet, pour in the reserved cooking water, and swirl vigorously over medium heat for 60 seconds.`
+                ],
+                chefTip: 'The starch dissolved into the pasta boiling water acts as an emulsifier to bind fats into a restaurant-gloss sauce.'
+              });
+            } else if (isBread || hasCheese) {
+              pushRecipe({
+                title: `Toasted ${capitalize(prot)} & ${capitalize(veg)} Panini Melt`,
+                emoji: '🧀',
+                time: '10 mins',
+                tier: hasCheese ? '100% Match' : 'Missing 1 Item',
+                missing: hasCheese ? 'None' : 'Melting cheese',
+                ingredients: [
+                  `${sMultiplier} tortillas or bread slices`,
+                  `${4 * sMultiplier} oz ${prot}`,
+                  `1/3 cup sautéed ${veg}`,
+                  `${3 * sMultiplier} oz sliced or shredded cheese`,
+                  '1 tbsp butter for pan browning'
+                ],
+                instructions: [
+                  `Layer cheese, cooked ${prot}, and ${veg} between bread or inside a folded tortilla.`,
+                  `Melt butter in a skillet over medium-low heat.`,
+                  `Grill for 3–4 minutes per side, pressing down firmly, until golden brown and cheese is completely melted.`
+                ],
+                chefTip: 'Keep temperature moderate so the cheese fully melts through before the exterior bread over-browns.'
+              });
+            }
+          });
+
+          // 7. Cream / Dairy Glazed Skillet
+          if (dairy.length || hasCheese) {
+            const dName = dairy[0] || 'butter';
+            pushRecipe({
+              title: `Velvety ${capitalize(dName)}-Braised ${capitalize(prot)} & ${capitalize(veg)}`,
+              emoji: '🧈',
+              time: '16 mins',
+              tier: '100% Match',
+              missing: 'None',
+              ingredients: [
+                `${6 * sMultiplier} oz ${prot}`,
+                `1 cup chopped ${veg}`,
+                `3 tbsp ${dName}`,
+                'Black pepper and fresh garlic salt'
+              ],
+              instructions: [
+                `Sear ${prot} until golden in a warm pan, then stir in ${veg}.`,
+                `Drop heat to low and melt in ${dName}, swirling gently to create a rich glaze.`,
+                `Simmer for 3 minutes until vegetables are glossy and coated, then season to taste.`
+              ],
+              chefTip: 'Adding cold dairy to a warm pan off the heat creates a rich pan emulsion that never breaks or separates.'
+            });
+          }
+
         });
-      }
+      });
 
       // Filter handling
       let filtered = generated;
       if (filterType === 'Under 15 Minutes') {
         filtered = generated.filter(r => parseInt(r.time) <= 15);
       } else if (filterType === 'High Protein') {
-        filtered = generated.filter(r => r.title.toLowerCase().includes(p1.toLowerCase()));
+        filtered = generated.filter(r => proteins.some(p => r.title.toLowerCase().includes(p.toLowerCase())));
+      } else if (filterType === 'One-Pan Meal') {
+        filtered = generated.filter(r => r.title.includes('Skillet') || r.title.includes('Sheet Pan') || r.title.includes('Broth'));
       }
 
-      // Return exactly 5 dynamic cards (or whatever was synthesized)
-      return filtered.slice(0, 5);
+      // Return discovered variations capped cleanly at 75
+      return filtered.slice(0, 75);
     }
 
     function setPortion(num) {
@@ -1061,7 +1135,7 @@
       container.innerHTML = '';
 
       if (!currentRecipes.length) {
-        container.innerHTML = `<div style="color:#94a3b8; font-size:0.85rem; padding:20px; text-align:center;">Add a protein, vegetable, or grain to your pantry to see matched meals!</div>`;
+        container.innerHTML = `<div style="color:#94a3b8; font-size:0.85rem; padding:20px; text-align:center;">Add ingredients to your pantry to see matched meals!</div>`;
         return;
       }
 
@@ -1100,7 +1174,7 @@
 
     function showResults(title, recipes) {
       openOverlay('overlay-results');
-      document.getElementById('results-title').textContent = title;
+      document.getElementById('results-title').textContent = `${title} (${recipes.length})`;
       currentRecipes = recipes;
       renderRecipeCards();
     }
@@ -1166,7 +1240,7 @@
       const expiring = pantryItems.filter(i => i.expiring);
       if (!expiring.length) return showToast('No expiring items tagged.');
       lastFilterContext = generateRescueMeal;
-      showResults('Rescue Meals', synthesizeRecipes());
+      showResults('Rescue Meals', synthesizeRecipes(null, true));
     }
 
     function filterAndGenerate(mood) {
